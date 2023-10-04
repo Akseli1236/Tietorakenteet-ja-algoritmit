@@ -17,5 +17,6 @@ void printAllItems(const list<int>& lst)
     for (auto it=lst.begin(); it != lst.end(); it++){
         cout << *it << " ";
     }
+    cout << endl;
     // ADD YOUR CODE HERE
 }
