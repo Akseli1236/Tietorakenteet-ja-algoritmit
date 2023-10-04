@@ -20,7 +20,7 @@ void printEverySecond(const list<int>& lst)
             break;
         }
         cout << *it << " ";
-        a++;
+        a +=2 ;
     }
     cout << endl;
     // ADD YOUR CODE HERE
