@@ -19,5 +19,6 @@ void printHalf(const list<int>& lst)
     for (auto it=lst.begin(); it != middle; it++){
         cout << *it << " ";
     }
+    cout << endl;
     // ADD YOUR CODE HERE
 }

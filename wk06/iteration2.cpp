@@ -17,5 +17,6 @@ void printEverySecond(const list<int>& lst)
     for (auto it=lst.begin(); it != lst.end(); advance(it, 2)){
         cout << *it << " ";
     }
+    cout << endl;
     // ADD YOUR CODE HERE
 }
