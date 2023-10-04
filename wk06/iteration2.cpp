@@ -14,8 +14,13 @@ using namespace std;
 
 void printEverySecond(const list<int>& lst)
 {
+    unsigned long a = 0;
     for (auto it=lst.begin(); it != lst.end(); advance(it, 2)){
+        if (a > lst.size()){
+            break;
+        }
         cout << *it << " ";
+        a++;
     }
     cout << endl;
     // ADD YOUR CODE HERE
