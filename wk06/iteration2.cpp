@@ -14,5 +14,8 @@ using namespace std;
 
 void printEverySecond(const list<int>& lst)
 {
+    for (auto it=lst.begin(); it != lst.end(); advance(it, 2)){
+        cout << *it << " ";
+    }
     // ADD YOUR CODE HERE
 }

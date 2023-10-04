@@ -14,5 +14,10 @@ using namespace std;
 
 void printHalf(const list<int>& lst)
 {
+    auto middle = lst.begin();
+    advance(middle, distance(lst.begin(),lst.end())/2);
+    for (auto it=lst.begin(); it != middle; it++){
+        cout << *it << " ";
+    }
     // ADD YOUR CODE HERE
 }

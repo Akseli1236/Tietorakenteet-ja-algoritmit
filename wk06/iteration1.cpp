@@ -14,5 +14,8 @@ using namespace std;
 
 void printAllItems(const list<int>& lst)
 {
+    for (auto it=lst.begin(); it != lst.end(); it++){
+        cout << *it << " ";
+    }
     // ADD YOUR CODE HERE
 }
