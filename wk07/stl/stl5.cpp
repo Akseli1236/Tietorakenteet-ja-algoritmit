@@ -17,6 +17,35 @@ using namespace std;
  */
 int sortMod3(std::vector<int>& v)
 {
-    return EXIT_FAILURE;
+    try {
+        int firstHalf = 0;
+        int secondHalf = 0;
+        std::vector<int> temp = {};
+        for_each(v.begin(),v.end(), [&firstHalf, &temp, &secondHalf](int &element){
+
+            if (element % 3 == 0){
+                firstHalf++;
+                temp.insert(temp.begin(), element);
+                sort(temp.begin(), temp.begin() + firstHalf);
+            }else if (element % 3 == 1){
+                secondHalf++;
+                temp.insert(temp.begin() + firstHalf, element);
+                sort(temp.begin()+ firstHalf, temp.begin() + firstHalf + secondHalf);
+            }else if (element % 3 == 2){
+
+                temp.push_back(element);
+                sort(temp.begin() + firstHalf + secondHalf, temp.end());
+
+            }
+        });
+
+        v = temp;
+        return EXIT_SUCCESS;
+
+    } catch (...) {
+        return EXIT_FAILURE;
+    }
+
+
 }
 

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <iterator>
 #include <map>
 #include <algorithm>
@@ -17,5 +18,17 @@ using namespace std;
  */
 int findAtLeastGiven(std::map<std::string, int>& m, int given)
 {
+    int value = NULL;
+    for_each(m.begin(),m.end(), [&given, &value](const std::pair<std::string, int>& pair){
+        if (pair.second >= given && value == NULL){
+            value = pair.second;
+        }
+    });
+
+    if (value == NULL){
+        return NOT_FOUND;
+    }
+    return value;
+
 }
 
