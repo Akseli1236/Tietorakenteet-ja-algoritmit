@@ -2,7 +2,9 @@
 #include <vector>
 #include <algorithm>
 #include <random>
+#include <bits/stdc++.h>
 
+using namespace std;
 
 //---- Some utilities
 using iter = std::vector<int>::iterator;
@@ -20,11 +22,20 @@ using RNG = std::default_random_engine;
  * @param end an iterator that points to the end part of the sequence where the quicksort is performed
  * @param rng the random number generator that can be used
  */
+
+
 void randomizedThreePartQuicksort(iter begin, iter end, RNG& rng)
 {
     if (begin == end) return;
-    std::shuffle(begin, end, rng);
-    auto pivot = *(begin + (end - begin)/2);
+    std::random_device rd;
+    rng.seed(rd());
+
+    // Median-of-three pivot selection
+    iter first = begin;
+    iter last = std::prev(end);
+    iter middle = first + (std::distance(first, last) / 2);
+    const int pivotIter = std::max(std::min(*first, *middle), std::min(std::max(*first, *middle), *last));
+    auto pivot = pivotIter;
     iter middle1 = std::partition(begin, end,
         [pivot](int val){ return val < pivot; });
     iter middle2 = std::partition(middle1, end,
