@@ -2,6 +2,11 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <iostream>
+#include <chrono>
+#include <numeric>
+
+using namespace std;
 
 
 /**
@@ -15,12 +20,19 @@
  *         a map as values, vector values used as keys.
  */
 std::map<int, int> cumulativeSums(std::vector<int> v) {
+    auto start = std::chrono::high_resolution_clock::now();
     std::map<int,int> sums;
-    for (unsigned int i=0; i<v.size(); ++i) {
-        if (sums.empty())
-        { sums[v[i]] = v[i]; }
-        else
-        { sums[v[i]] = sums.at(v[i-1]) + v[i]; }
-    }
+
+    //std::vector<int> cumulativeSum(v.size());
+    //std::partial_sum(v.begin(), v.end(), cumulativeSum.begin());
+
+    std::accumulate(v.begin(), v.end(), 0, [&](int &acc, int x) {
+        acc += x;
+        sums[x] = acc;
+        return acc;
+    });
+    auto end = std::chrono::high_resolution_clock::now();
+    double time_taken = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1e6;
+    std::cout << "Time taken by program is: " << time_taken  << " sec " <<std::endl;
     return sums;
 }
