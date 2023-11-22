@@ -107,8 +107,12 @@ public:
     struct Data {
         Name name;
         Coord coords;
+        std::map<Name,AffiliationID> ah = {};
+        std::vector<std::string> nimi;
+        std::map<double, AffiliationID> distance = {};
         std::vector<PubData*> pub = {};
         std::vector<PublicationID> pubs = {};
+
     };
 
 

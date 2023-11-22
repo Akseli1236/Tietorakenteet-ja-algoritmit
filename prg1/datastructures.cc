@@ -64,7 +64,11 @@ std::vector<AffiliationID> Datastructures::get_all_affiliations()
 
 bool Datastructures::add_affiliation(AffiliationID id, const Name &name, Coord xy)
 {
+    double dist = sqrt(pow(xy.x,2) + pow(xy.y,2));
     Data newData = {name, xy};
+    //newData.nimi.push_back(std::to_string(dist) +":" +id);
+    newData.ah.insert({name, id});
+    newData.distance.insert({dist, id});
     aff[id] = newData;
     // Replace the line below with your implementation
     return true;
@@ -90,18 +94,13 @@ Coord Datastructures::get_affiliation_coord(AffiliationID id)
 
 std::vector<AffiliationID> Datastructures::get_affiliations_alphabetically()
 {
-    std::vector<AffiliationID> alphabetically(aff.size());
-    std::vector<std::pair<Name, AffiliationID>> sortedPairs(aff.size());
+    std::vector<AffiliationID> alphabetically = {};
+    for (const auto& affiliation : aff){
+        std::transform(affiliation.second.ah.begin(), affiliation.second.ah.end(), std::back_inserter(alphabetically), [](const auto& pair) {
+            return pair.second;
+        });
 
-    std::transform(aff.begin(), aff.end(), sortedPairs.begin(), [](const auto& affiliation) {
-        return std::make_pair(affiliation.second.name, affiliation.first);
-    });
-
-    std::sort(sortedPairs.begin(), sortedPairs.end());
-
-    std::transform(sortedPairs.begin(), sortedPairs.end(), alphabetically.begin(), [](const auto& pair) {
-        return pair.second;
-    });
+    }
 
     return alphabetically;
 }
@@ -109,37 +108,22 @@ std::vector<AffiliationID> Datastructures::get_affiliations_alphabetically()
 std::vector<AffiliationID> Datastructures::get_affiliations_distance_increasing()
 {
     std::vector<AffiliationID> distance(aff.size());
-    std::vector<std::pair<double, AffiliationID>> sorted(aff.size());
+    for (const auto& singleAff : aff){
 
-    std::transform(aff.begin(), aff.end(), sorted.begin(), [](const auto& affiliation) {
-        return std::make_pair(sqrt(pow(affiliation.second.coords.x,2) + pow(affiliation.second.coords.y,2)), affiliation.first);
-    });
+        std::transform(singleAff.second.distance.begin(), singleAff.second.distance.end(), std::back_inserter(distance), [](const auto& pair) {
+            return pair.second;
+        });
+    }
 
-
-    auto pairComparator = [](const std::pair<double, AffiliationID>& pair1, const std::pair<double, AffiliationID>& pair2) {
-        if (pair1.first == pair2.first) {
-            return pair1.second > pair2.second;  // Compare based on the second element in descending order if the first elements are equal
-        }
-        return pair1.first < pair2.first;  // Otherwise, compare based on the first element
-    };
-
-    // Sort the vector using the custom comparator
-    std::sort(sorted.begin(), sorted.end(), pairComparator);
-
-    std::transform(sorted.begin(), sorted.end(), distance.begin(), [](const auto& pair) {
-        return pair.second;
-    });
     return distance;
 }
 
 AffiliationID Datastructures::find_affiliation_with_coord(Coord xy)
 {
 
-    for (const auto& affWcoords : aff){
-        if (affWcoords.second.coords == xy){
-            return affWcoords.first;
-        }
-    }
+    for (auto it = aff.begin(); it != aff.end(); ++it)
+        if (it->second.coords == xy)
+            return it->first;
     return NO_AFFILIATION;
 }
 
