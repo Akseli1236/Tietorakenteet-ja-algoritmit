@@ -235,8 +235,8 @@ public:
 
 
 private:
-    std::map<AffiliationID, Data> aff;
-    std::map<PublicationID, PubData> pub;
+    std::unordered_map<AffiliationID, Data> aff;
+    std::unordered_map<PublicationID, PubData> pub;
 
 };
 

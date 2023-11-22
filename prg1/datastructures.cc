@@ -90,27 +90,31 @@ Coord Datastructures::get_affiliation_coord(AffiliationID id)
 
 std::vector<AffiliationID> Datastructures::get_affiliations_alphabetically()
 {
-    std::vector<AffiliationID> alphabetically = {};
-    std::map<Name, AffiliationID> sorted;
-    for (const auto& affiliation : aff){
-        sorted[affiliation.second.name] = affiliation.first;
+    std::vector<AffiliationID> alphabetically(aff.size());
+    std::vector<std::pair<Name, AffiliationID>> sortedPairs(aff.size());
 
-    }
-    for (const auto& affiliation : sorted){
-        alphabetically.push_back(affiliation.second);
-    }
+    std::transform(aff.begin(), aff.end(), sortedPairs.begin(), [](const auto& affiliation) {
+        return std::make_pair(affiliation.second.name, affiliation.first);
+    });
+
+    std::sort(sortedPairs.begin(), sortedPairs.end());
+
+    std::transform(sortedPairs.begin(), sortedPairs.end(), alphabetically.begin(), [](const auto& pair) {
+        return pair.second;
+    });
 
     return alphabetically;
 }
 
 std::vector<AffiliationID> Datastructures::get_affiliations_distance_increasing()
 {
-    std::vector<AffiliationID> distance = {};
-    std::vector<std::pair<double, AffiliationID>> sorted;
-    for (const auto& singleAff : aff){
-        double dist = sqrt(pow(singleAff.second.coords.x,2) + pow(singleAff.second.coords.y,2));
-        sorted.push_back({dist, singleAff.first});
-    }
+    std::vector<AffiliationID> distance(aff.size());
+    std::vector<std::pair<double, AffiliationID>> sorted(aff.size());
+
+    std::transform(aff.begin(), aff.end(), sorted.begin(), [](const auto& affiliation) {
+        return std::make_pair(sqrt(pow(affiliation.second.coords.x,2) + pow(affiliation.second.coords.y,2)), affiliation.first);
+    });
+
 
     auto pairComparator = [](const std::pair<double, AffiliationID>& pair1, const std::pair<double, AffiliationID>& pair2) {
         if (pair1.first == pair2.first) {
@@ -122,14 +126,15 @@ std::vector<AffiliationID> Datastructures::get_affiliations_distance_increasing(
     // Sort the vector using the custom comparator
     std::sort(sorted.begin(), sorted.end(), pairComparator);
 
-    for (const auto& affiliation : sorted){
-        distance.push_back(affiliation.second);
-    }
+    std::transform(sorted.begin(), sorted.end(), distance.begin(), [](const auto& pair) {
+        return pair.second;
+    });
     return distance;
 }
 
 AffiliationID Datastructures::find_affiliation_with_coord(Coord xy)
 {
+
     for (const auto& affWcoords : aff){
         if (affWcoords.second.coords == xy){
             return affWcoords.first;
