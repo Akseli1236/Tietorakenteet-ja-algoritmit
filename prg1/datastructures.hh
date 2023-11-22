@@ -14,6 +14,7 @@
 #include <limits>
 #include <functional>
 #include <exception>
+#include <map>
 
 // Types for IDs
 using AffiliationID = std::string;
@@ -94,6 +95,24 @@ private:
 class Datastructures
 {
 public:
+    struct PubData{
+        std::vector<AffiliationID> affId;
+        Name pubName;
+        Year pubYear;
+        PublicationID pubId;
+        PubData* parent;
+        std::vector<PubData*> children = {};
+    };
+
+    struct Data {
+        Name name;
+        Coord coords;
+        std::vector<PubData*> pub = {};
+        std::vector<PublicationID> pubs;
+    };
+
+
+
     Datastructures();
     ~Datastructures();
 
@@ -216,6 +235,8 @@ public:
 
 
 private:
+    std::map<AffiliationID, Data> aff;
+    std::map<PublicationID, PubData> pub;
 
 };
 
