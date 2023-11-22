@@ -112,9 +112,9 @@ std::vector<AffiliationID> Datastructures::get_affiliations_distance_increasing(
         sorted.push_back({dist, singleAff.first});
     }
 
-    auto pairComparator = [](const std::pair<double, std::string>& pair1, const std::pair<double, std::string>& pair2) {
+    auto pairComparator = [](const std::pair<double, AffiliationID>& pair1, const std::pair<double, AffiliationID>& pair2) {
         if (pair1.first == pair2.first) {
-            return pair1.first == pair2.first;  // Compare based on the second element if the first elements are equal
+            return pair1.second > pair2.second;  // Compare based on the second element in descending order if the first elements are equal
         }
         return pair1.first < pair2.first;  // Otherwise, compare based on the first element
     };
