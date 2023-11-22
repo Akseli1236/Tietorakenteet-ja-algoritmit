@@ -1,8 +1,8 @@
 // Datastructures.hh
 //
-// Student name:
-// Student email:
-// Student number:
+// Student name: Akseli Ahonen
+// Student email: akseli.ahonen@tuni.fi
+// Student number: 150313812
 
 #ifndef DATASTRUCTURES_HH
 #define DATASTRUCTURES_HH
@@ -108,7 +108,7 @@ public:
         Name name;
         Coord coords;
         std::vector<PubData*> pub = {};
-        std::vector<PublicationID> pubs;
+        std::vector<PublicationID> pubs = {};
     };
 
 

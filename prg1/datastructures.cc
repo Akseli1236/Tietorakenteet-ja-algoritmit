@@ -1,8 +1,8 @@
 // Datastructures.cc
 //
-// Student name
-// Student email:
-// Student number:
+// Student name: Akseli Ahonen
+// Student email: akseli.ahonen@tuni.fi
+// Student number: 150313812
 
 #include "datastructures.hh"
 
@@ -33,7 +33,6 @@ Type random_in_range(Type start, Type end)
 
 Datastructures::Datastructures()
 {
-    Data newData = {"DefaultName", {0, 0}};
     // Write any initialization you need here
 }
 
