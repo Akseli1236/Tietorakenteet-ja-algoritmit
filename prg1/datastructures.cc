@@ -54,7 +54,6 @@ void Datastructures::clear_all()
     //affdist.clear();
     affName.clear();
     test.clear();
-    kek.clear();
     orderedNames.clear();
 }
 std::vector<AffiliationID> Datastructures::get_all_affiliations()
@@ -123,46 +122,37 @@ std::vector<AffiliationID> Datastructures::get_affiliations_alphabetically()
 std::vector<AffiliationID> Datastructures::get_affiliations_distance_increasing()
 {
     std::vector<AffiliationID> distance;
-    distance.reserve(test.size());
+
+    std::vector<double> sortedKeys;
+
 
     if (!sorted_distance){
+        distance.reserve(test.size());
+        sortedKeys.reserve(test.size());
 
+        // Extract and sort the keys
+        for (const auto& entry : test) {
+            sortedKeys.push_back(entry.first);
+        }
 
-        std::vector<std::pair<double, std::vector<Data>>> sortedPairs(test.begin(), test.end());
-        kek = sortedPairs;
-
-        std::sort(kek.begin(), kek.end(), [](const auto& a, const auto& b) {
-            return a.first < b.first;
-        });
+        std::sort(sortedKeys.begin(), sortedKeys.end());
         sorted_distance = true;
+
     }
 
 
-    for (const auto& sort : kek){
-        if (sort.second.size() == 1){
-            distance.push_back(sort.second.at(0).affId);
+    for (const auto& sort : sortedKeys){
+        if (test[sort].size() == 1){
+            distance.push_back(test[sort].at(0).affId);
         }else{
-            for (const auto& loop : sort.second){
+            for (const auto& loop : test[sort]){
                 distance.push_back(std::move(loop.affId));
             }
         }
     }
+    orderedDistance = distance;
 
-/*
-    for (const auto& singleAff : affdist) {
-        //double dist = sqrt(pow(singleAff.second.coords.x,2) + pow(singleAff.second.coords.y,2));
-        // Transform pairs from singleAff.second.distance to distance vector
-        if (singleAff.second.size() == 1){
-            distance.push_back(singleAff.second.at(0).affId);
-        }else{
-            for (const auto& loop : singleAff.second){
-                distance.push_back(std::move(loop.affId));
-            }
-        }
-
-    }
-*/
-    return distance;
+    return orderedDistance;
 }
 
 AffiliationID Datastructures::find_affiliation_with_coord(Coord xy)

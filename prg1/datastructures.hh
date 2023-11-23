@@ -270,8 +270,9 @@ private:
     std::unordered_map<double,std::vector<Data>> test;
     bool sorted_distance;
     bool sorted_name;
-    std::vector<std::pair<double, std::vector<Data>>> kek;
     std::vector<AffiliationID> orderedNames;
+    std::vector<AffiliationID> orderedDistance;
+    std::vector<std::pair<double, std::vector<Data>>> kek;
 
 };
 
