@@ -314,12 +314,10 @@ bool Datastructures::add_affiliation_to_publication(AffiliationID affiliationid,
 
 std::vector<PublicationID> Datastructures::get_publications(AffiliationID id)
 {
-    std::vector<PublicationID> pubs = {};
+    std::vector<PublicationID> pubs;
     if (aff.find(id) == aff.end()) {
         return {NO_PUBLICATION};
     }
-
-
     std::vector<PublicationID> vectorPub = aff[id].pubs;
     for (const auto& aPub : vectorPub){
         pubs.push_back(aPub);
@@ -355,15 +353,23 @@ std::vector<PublicationID> Datastructures::get_referenced_by_chain(PublicationID
 {
     std::vector<PublicationID> chain;
     if (pub.find(id) == pub.end()){
-        chain.push_back(NO_PUBLICATION);
+        std::vector<PublicationID> empty = {};
+        return empty;
     }
 
     if (pub[id].parent != nullptr){
         chain.push_back(pub[id].parent->pubId);
         auto getParent = get_referenced_by_chain(pub[id].parent->pubId);
+        std::cout << getParent.empty() << ":";
         chain.insert(chain.begin(), getParent.begin(), getParent.end());
     }
-    std::reverse(chain.begin(), chain.end());
+    if (!chain.empty()){
+        std::reverse(chain.begin(), chain.end());
+    }
+    std::cout << chain.empty() << ":";
+    if (chain.size() == 1){
+        std::cout << chain.at(0) << std::endl;
+    }
     return chain;
 }
 
@@ -433,7 +439,32 @@ PublicationID Datastructures::get_closest_common_parent(PublicationID /*id1*/, P
 
 bool Datastructures::remove_publication(PublicationID publicationid)
 {
-    pub.erase(publicationid);
+    auto pubIt = pub.find(publicationid);
+    if (pubIt == pub.end()) {
+        return false;  // Publication not found
+    }
+
+    // Remove from parent's children
+    if (pubIt->second.parent != nullptr) {
+        auto& parentChildren = pubIt->second.parent->children;
+        parentChildren.erase(std::remove(parentChildren.begin(), parentChildren.end(), &pubIt->second), parentChildren.end());
+    }
+
+    // Set parent to nullptr for each child
+    for (auto& child : pubIt->second.children) {
+        child->parent = nullptr;
+    }
+
+    // Erase from pub map
+    pub.erase(pubIt);
+
+    // Erase from each affiliation's pubs
+    for (auto& [affiliationID, affiliation] : aff) {
+        auto it = std::find(affiliation.pubs.begin(), affiliation.pubs.end(), publicationid);
+        if (it != affiliation.pubs.end()) {
+            affiliation.pubs.erase(it);
+        }
+    }
     return true;
 }
 
