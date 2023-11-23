@@ -107,9 +107,7 @@ public:
     struct Data {
         Name name;
         Coord coords;
-        std::map<Name,AffiliationID> ah = {};
-        std::vector<std::string> nimi;
-        std::map<double, AffiliationID> distance = {};
+        AffiliationID affId;
         std::vector<PubData*> pub = {};
         std::vector<PublicationID> pubs = {};
 
@@ -240,6 +238,8 @@ public:
 
 private:
     std::unordered_map<AffiliationID, Data> aff;
+    std::map<Name,Data> affName;
+    std::map<double,std::vector<Data>> affdist;
     std::unordered_map<PublicationID, PubData> pub;
 
 };
