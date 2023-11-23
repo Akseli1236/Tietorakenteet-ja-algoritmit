@@ -267,6 +267,9 @@ private:
     std::map<double,std::vector<Data>> affdist;
     std::map<Name,Data> affName;
     std::unordered_map<PublicationID, PubData> pub;
+    std::unordered_map<double,std::vector<Data>> test;
+    bool sorted;
+    std::vector<std::pair<double, std::vector<Data>>> kek;
 
 };
 

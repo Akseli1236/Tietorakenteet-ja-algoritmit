@@ -12,6 +12,7 @@
 #include <map>
 #include <iostream>
 #include <algorithm>
+#include <iterator>
 
 std::minstd_rand rand_engine; // Reasonably quick pseudo-random generator
 
@@ -50,8 +51,9 @@ void Datastructures::clear_all()
 {
     aff.clear();
     pub.clear();
+    //affdist.clear();
     affName.clear();
-    affdist.clear();
+    test.clear();
 }
 
 std::vector<AffiliationID> Datastructures::get_all_affiliations()
@@ -68,11 +70,14 @@ bool Datastructures::add_affiliation(AffiliationID id, const Name &name, Coord x
 {
     double dist = sqrt(pow(xy.x,2) + pow(xy.y,2));
     Data newData = {name, xy, id};
-    //newData.nimi.push_back(std::to_string(dist) +":" +id);
     aff[id] = newData;
+    //affdist[dist].push_back(newData);
     affName[name] = newData;
-    affdist[dist].push_back(newData);
+    test[dist].push_back(newData);
     // Replace the line below with your implementation
+    sorted = false;
+
+
     return true;
 }
 
@@ -98,19 +103,45 @@ std::vector<AffiliationID> Datastructures::get_affiliations_alphabetically()
 {
 
 
-    std::vector<AffiliationID> alphabetically = {};
+    std::vector<AffiliationID> alphabetically;
+    alphabetically.reserve(affName.size());
+
     for (const auto& affiliation : affName){
         alphabetically.push_back(affiliation.second.affId);
 
-
     }
-
     return alphabetically;
 }
 
 std::vector<AffiliationID> Datastructures::get_affiliations_distance_increasing()
 {
     std::vector<AffiliationID> distance;
+    distance.reserve(test.size());
+
+    if (!sorted){
+
+
+        std::vector<std::pair<double, std::vector<Data>>> sortedPairs(test.begin(), test.end());
+        kek = sortedPairs;
+
+        std::sort(kek.begin(), kek.end(), [](const auto& a, const auto& b) {
+            return a.first < b.first;
+        });
+        sorted = true;
+    }
+
+
+    for (const auto& sort : kek){
+        if (sort.second.size() == 1){
+            distance.push_back(sort.second.at(0).affId);
+        }else{
+            for (const auto& loop : sort.second){
+                distance.push_back(std::move(loop.affId));
+            }
+        }
+    }
+
+/*
     for (const auto& singleAff : affdist) {
         //double dist = sqrt(pow(singleAff.second.coords.x,2) + pow(singleAff.second.coords.y,2));
         // Transform pairs from singleAff.second.distance to distance vector
@@ -118,26 +149,64 @@ std::vector<AffiliationID> Datastructures::get_affiliations_distance_increasing(
             distance.push_back(singleAff.second.at(0).affId);
         }else{
             for (const auto& loop : singleAff.second){
-                distance.push_back(loop.affId);
+                distance.push_back(std::move(loop.affId));
             }
         }
 
     }
-
+*/
     return distance;
 }
 
 AffiliationID Datastructures::find_affiliation_with_coord(Coord xy)
 {
+    double dist = sqrt(pow(xy.x,2) + pow(xy.y,2));
+    if (test[dist].size() == 1){
+        std::cout << test[dist].at(0).name << std::endl;
+        return test[dist].at(0).affId;
+    }
 
-    for (auto it = aff.begin(); it != aff.end(); ++it)
-        if (it->second.coords == xy)
-            return it->first;
+    for (const auto& it : test[dist]){
+        std::cout << it.name << it.coords.x << it.coords.y << std::endl;
+        if (it.coords == xy){
+            return it.affId;
+        }
+    }
     return NO_AFFILIATION;
 }
 
 bool Datastructures::change_affiliation_coord(AffiliationID id, Coord newcoord)
 {
+
+    int i = 0;
+    if (aff.find(id) != aff.end()){
+        auto oldCoord = aff[id].coords;
+        double dist = sqrt(pow(oldCoord.x,2) + pow(oldCoord.y,2));
+
+        aff[id].coords = newcoord;
+
+        double newdist = sqrt(pow(newcoord.x,2) + pow(newcoord.y,2));
+        auto it = test.find(dist);
+
+        Data newData = {};
+        for (const auto& data : it->second){
+            if (data.coords == oldCoord){
+                newData = data;
+                newData.coords = newcoord;
+                break;
+            }
+            i++;
+
+        }
+        it->second.erase(it->second.begin() + i);
+        test[newdist].push_back(newData);
+
+        return true;
+    }
+
+    return false;
+/*
+    int i = 0;
     if (aff.find(id) != aff.end()){
         auto oldCoord = aff[id].coords;
         double dist = sqrt(pow(oldCoord.x,2) + pow(oldCoord.y,2));
@@ -146,11 +215,12 @@ bool Datastructures::change_affiliation_coord(AffiliationID id, Coord newcoord)
 
         double newdist = sqrt(pow(newcoord.x,2) + pow(newcoord.y,2));
         auto it = affdist.find(dist);
-        int i = 0;
+
         Data newData = {};
         for (const auto& data : it->second){
             if (data.coords == oldCoord){
                 newData = data;
+                newData.coords = newcoord;
                 break;
             }
             i++;
@@ -161,7 +231,9 @@ bool Datastructures::change_affiliation_coord(AffiliationID id, Coord newcoord)
 
         return true;
     }
+
     return false;
+ */
 
 }
 
