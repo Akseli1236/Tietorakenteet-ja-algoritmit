@@ -139,12 +139,12 @@ public:
     // map is log(n)
     bool add_affiliation(AffiliationID id, Name const& name, Coord xy);
 
-    // Estimate of performance: O(1)
+    // Estimate of performance: O(n)
     // Short rationale for estimate:
     // Find from undorder_map is constant on average
     Name get_affiliation_name(AffiliationID id);
 
-    // Estimate of performance: O(1)
+    // Estimate of performance: O(n)
     // Short rationale for estimate:
     // Find from undorder_map is constant on average
     Coord get_affiliation_coord(AffiliationID id);
@@ -162,7 +162,7 @@ public:
     // We need to loop trough 2 times n
     std::vector<AffiliationID> get_affiliations_distance_increasing();
 
-    // Estimate of performance: O(n*log(n))
+    // Estimate of performance: O(n)
     // Short rationale for estimate:
     // We loop trough n items and get value from map
     AffiliationID find_affiliation_with_coord(Coord xy);
@@ -195,7 +195,7 @@ public:
     // Get value from map
     Year get_publication_year(PublicationID id);
 
-    // Estimate of performance: O(log(n))
+    // Estimate of performance: O(n*log(n))
     // Short rationale for estimate:
     // find from map is log(n)
     std::vector<AffiliationID> get_affiliations(PublicationID id);
@@ -210,9 +210,9 @@ public:
     // We loop trough n item
     std::vector<PublicationID> get_direct_references(PublicationID id);
 
-    // Estimate of performance: O(1)
+    // Estimate of performance: O(n)
     // Short rationale for estimate:
-    // operator[] in undoreder_map is constant
+    // operator[] in undoreder_map is constant, but worst case linear
     bool add_affiliation_to_publication(AffiliationID affiliationid, PublicationID publicationid);
 
     // Estimate of performance: O(n)
