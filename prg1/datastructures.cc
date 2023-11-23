@@ -55,8 +55,8 @@ void Datastructures::clear_all()
     affName.clear();
     test.clear();
     kek.clear();
+    orderedNames.clear();
 }
-
 std::vector<AffiliationID> Datastructures::get_all_affiliations()
 {
     // Replace the line below with your implementation
@@ -76,7 +76,8 @@ bool Datastructures::add_affiliation(AffiliationID id, const Name &name, Coord x
     affName[name] = newData;
     test[dist].push_back(newData);
     // Replace the line below with your implementation
-    sorted = false;
+    sorted_distance = false;
+    sorted_name = false;
 
 
     return true;
@@ -104,14 +105,19 @@ std::vector<AffiliationID> Datastructures::get_affiliations_alphabetically()
 {
 
 
-    std::vector<AffiliationID> alphabetically;
-    alphabetically.reserve(affName.size());
 
-    for (const auto& affiliation : affName){
-        alphabetically.push_back(affiliation.second.affId);
+    if (!sorted_name){
+        std::vector<AffiliationID> alphabetically;
+        alphabetically.reserve(affName.size());
+        for (const auto& affiliation : affName){
+            alphabetically.push_back(affiliation.second.affId);
 
+        }
+        sorted_name = true;
+        orderedNames = alphabetically;
     }
-    return alphabetically;
+
+    return orderedNames;
 }
 
 std::vector<AffiliationID> Datastructures::get_affiliations_distance_increasing()
@@ -119,7 +125,7 @@ std::vector<AffiliationID> Datastructures::get_affiliations_distance_increasing(
     std::vector<AffiliationID> distance;
     distance.reserve(test.size());
 
-    if (!sorted){
+    if (!sorted_distance){
 
 
         std::vector<std::pair<double, std::vector<Data>>> sortedPairs(test.begin(), test.end());
@@ -128,7 +134,7 @@ std::vector<AffiliationID> Datastructures::get_affiliations_distance_increasing(
         std::sort(kek.begin(), kek.end(), [](const auto& a, const auto& b) {
             return a.first < b.first;
         });
-        sorted = true;
+        sorted_distance = true;
     }
 
 
@@ -199,7 +205,7 @@ bool Datastructures::change_affiliation_coord(AffiliationID id, Coord newcoord)
         }
         it->second.erase(it->second.begin() + i);
         test[newdist].push_back(newData);
-        sorted = false;
+        sorted_distance = false;
         return true;
     }
 
