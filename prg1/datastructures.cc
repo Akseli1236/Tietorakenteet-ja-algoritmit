@@ -375,15 +375,10 @@ std::vector<PublicationID> Datastructures::get_all_references(PublicationID id)
     }
 
     for (const auto& pubChildren : pub[id].children){
-        std::cout << pubChildren->pubId << std::endl;
         references.push_back(pubChildren->pubId);
 
         auto grandChild = get_all_references(pubChildren->pubId);
         references.insert(references.begin(), grandChild.begin(), grandChild.end());
-
-
-
-
     }
     return references;
 }
