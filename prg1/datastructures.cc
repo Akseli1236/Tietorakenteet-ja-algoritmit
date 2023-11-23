@@ -246,6 +246,7 @@ bool Datastructures::add_publication(PublicationID id, const Name &name, Year ye
 
 std::vector<PublicationID> Datastructures::all_publications()
 {
+
     std::vector<PublicationID> allPubs = {};
     for (const auto& pubs : pub){
         allPubs.push_back(pubs.first);
@@ -256,12 +257,18 @@ std::vector<PublicationID> Datastructures::all_publications()
 
 Name Datastructures::get_publication_name(PublicationID id)
 {
+    if (pub.find(id) == pub.end()){
+        return NO_NAME;
+    }
     return pub[id].pubName;
 
 }
 
 Year Datastructures::get_publication_year(PublicationID id)
 {
+    if (pub.find(id) == pub.end()){
+        return NO_YEAR;
+    }
     return pub[id].pubYear;
 
 
@@ -363,11 +370,19 @@ std::vector<PublicationID> Datastructures::get_referenced_by_chain(PublicationID
 std::vector<PublicationID> Datastructures::get_all_references(PublicationID id)
 {
     std::vector<PublicationID> references;
+    if (pub.find(id) == pub.end()){
+        return {NO_PUBLICATION};
+    }
+
     for (const auto& pubChildren : pub[id].children){
+        std::cout << pubChildren->pubId << std::endl;
         references.push_back(pubChildren->pubId);
 
         auto grandChild = get_all_references(pubChildren->pubId);
         references.insert(references.begin(), grandChild.begin(), grandChild.end());
+
+
+
 
     }
     return references;
