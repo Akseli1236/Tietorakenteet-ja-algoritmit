@@ -118,128 +118,154 @@ public:
     Datastructures();
     ~Datastructures();
 
-    // Estimate of performance:
+    // Estimate of performance: O(1)
     // Short rationale for estimate:
+    // Getting the size of conainer is constant.
     unsigned int get_affiliation_count();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: Clearing
+    // containers is linear to the size of n and that
+    // multiple times in n
     void clear_all();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: function call
+    // performs loop n times
     std::vector<AffiliationID> get_all_affiliations();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(log(n))
+    // Short rationale for estimate: adding elements to
+    // map is log(n)
     bool add_affiliation(AffiliationID id, Name const& name, Coord xy);
 
-    // Estimate of performance:
+    // Estimate of performance: O(1)
     // Short rationale for estimate:
+    // Find from undorder_map is constant on average
     Name get_affiliation_name(AffiliationID id);
 
-    // Estimate of performance:
+    // Estimate of performance: O(1)
     // Short rationale for estimate:
+    // Find from undorder_map is constant on average
     Coord get_affiliation_coord(AffiliationID id);
 
 
     // We recommend you implement the operations below only after implementing the ones above
 
-    // Estimate of performance:
+    // Estimate of performance: O(n)
     // Short rationale for estimate:
+    // We loop trough n items;
     std::vector<AffiliationID> get_affiliations_alphabetically();
 
-    // Estimate of performance:
+    // Estimate of performance: O(n^2)
     // Short rationale for estimate:
+    // We need to loop trough 2 times n
     std::vector<AffiliationID> get_affiliations_distance_increasing();
 
-    // Estimate of performance:
+    // Estimate of performance: O(n*log(n))
     // Short rationale for estimate:
+    // We loop trough n items and get value from map
     AffiliationID find_affiliation_with_coord(Coord xy);
 
-    // Estimate of performance:
+    // Estimate of performance: O(n)
     // Short rationale for estimate:
+    // We loop trough n items
     bool change_affiliation_coord(AffiliationID id, Coord newcoord);
 
 
     // We recommend you implement the operations below only after implementing the ones above
 
-    // Estimate of performance:
+    // Estimate of performance: O(n)
     // Short rationale for estimate:
+    // We loop trough n items
     bool add_publication(PublicationID id, Name const& name, Year year, const std::vector<AffiliationID> & affiliations);
 
-    // Estimate of performance:
+    // Estimate of performance: O(n)
     // Short rationale for estimate:
+    // We loop trough n items
     std::vector<PublicationID> all_publications();
 
-    // Estimate of performance:
+    // Estimate of performance: O(1)
     // Short rationale for estimate:
+    // Get value from unorderet_map
     Name get_publication_name(PublicationID id);
 
-    // Estimate of performance:
+    // Estimate of performance: O(log(n))
     // Short rationale for estimate:
+    // Get value from map
     Year get_publication_year(PublicationID id);
 
-    // Estimate of performance:
+    // Estimate of performance: O(log(n))
     // Short rationale for estimate:
+    // find from map is log(n)
     std::vector<AffiliationID> get_affiliations(PublicationID id);
 
-    // Estimate of performance:
+    // Estimate of performance: O(log(n))
     // Short rationale for estimate:
+    // Adding pairs to map is log(n)
     bool add_reference(PublicationID id, PublicationID parentid);
 
-    // Estimate of performance:
+    // Estimate of performance: O(n)
     // Short rationale for estimate:
+    // We loop trough n item
     std::vector<PublicationID> get_direct_references(PublicationID id);
 
-    // Estimate of performance:
+    // Estimate of performance: O(1)
     // Short rationale for estimate:
+    // operator[] in undoreder_map is constant
     bool add_affiliation_to_publication(AffiliationID affiliationid, PublicationID publicationid);
 
-    // Estimate of performance:
+    // Estimate of performance: O(n)
     // Short rationale for estimate:
+    // We loop trough n items;
     std::vector<PublicationID> get_publications(AffiliationID id);
 
-    // Estimate of performance:
+    // Estimate of performance: O(1)
     // Short rationale for estimate:
+    // Find from unordered_map is constant
     PublicationID get_parent(PublicationID id);
 
-    // Estimate of performance:
+    // Estimate of performance: O(n)
     // Short rationale for estimate:
+    // We loop trough n items
     std::vector<std::pair<Year, PublicationID>> get_publications_after(AffiliationID affiliationid, Year year);
 
-    // Estimate of performance:
+    // Estimate of performance: O(n)
     // Short rationale for estimate:
+    // recursively to the depth of n
     std::vector<PublicationID> get_referenced_by_chain(PublicationID id);
 
 
     // Non-compulsory operations
 
-    // Estimate of performance:
+    // Estimate of performance: O(n*log(n))
     // Short rationale for estimate:
+    // We loop tough n times and recursively call children
     std::vector<PublicationID> get_all_references(PublicationID id);
 
     // Estimate of performance:
     // Short rationale for estimate:
     std::vector<AffiliationID> get_affiliations_closest_to(Coord xy);
 
-    // Estimate of performance:
+    // Estimate of performance: O(1)
     // Short rationale for estimate:
+    // remove with key is constant
     bool remove_affiliation(AffiliationID id);
 
     // Estimate of performance:
     // Short rationale for estimate:
     PublicationID get_closest_common_parent(PublicationID id1, PublicationID id2);
 
-    // Estimate of performance:
+    // Estimate of performance: O(1)
     // Short rationale for estimate:
+    //remove with key is constant
     bool remove_publication(PublicationID publicationid);
 
 
 private:
     std::unordered_map<AffiliationID, Data> aff;
-    std::map<Name,Data> affName;
     std::map<double,std::vector<Data>> affdist;
+    std::map<Name,Data> affName;
     std::unordered_map<PublicationID, PubData> pub;
 
 };
