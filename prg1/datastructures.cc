@@ -199,7 +199,7 @@ bool Datastructures::change_affiliation_coord(AffiliationID id, Coord newcoord)
         }
         it->second.erase(it->second.begin() + i);
         test[newdist].push_back(newData);
-
+        sorted = false;
         return true;
     }
 
