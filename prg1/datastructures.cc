@@ -55,6 +55,7 @@ void Datastructures::clear_all()
     affName.clear();
     test.clear();
     orderedNames.clear();
+    orderedDistance.clear();
 }
 std::vector<AffiliationID> Datastructures::get_all_affiliations()
 {
@@ -136,21 +137,23 @@ std::vector<AffiliationID> Datastructures::get_affiliations_distance_increasing(
         }
 
         std::sort(sortedKeys.begin(), sortedKeys.end());
+
+        for (const auto& sort : sortedKeys){
+            if (test[sort].size() == 1){
+                distance.push_back(test[sort].at(0).affId);
+            }else{
+                for (const auto& loop : test[sort]){
+                    distance.push_back(std::move(loop.affId));
+                }
+            }
+        }
+        orderedDistance = distance;
         sorted_distance = true;
 
     }
 
 
-    for (const auto& sort : sortedKeys){
-        if (test[sort].size() == 1){
-            distance.push_back(test[sort].at(0).affId);
-        }else{
-            for (const auto& loop : test[sort]){
-                distance.push_back(std::move(loop.affId));
-            }
-        }
-    }
-    orderedDistance = distance;
+
 
     return orderedDistance;
 }
@@ -306,7 +309,7 @@ std::vector<PublicationID> Datastructures::get_publications(AffiliationID id)
 {
     std::vector<PublicationID> pubs = {};
     if (aff.find(id) == aff.end()) {
-        return pubs;
+        return {NO_PUBLICATION};
     }
 
 
@@ -378,7 +381,37 @@ std::vector<AffiliationID> Datastructures::get_affiliations_closest_to(Coord /*x
 
 bool Datastructures::remove_affiliation(AffiliationID id)
 {
+    if (aff.find(id) == aff.end()){
+        return false;
+    }
+    affName.erase(aff[id].name);
+    auto it = std::find(orderedNames.begin(), orderedNames.end(), id);
+    auto it2 = std::find(orderedDistance.begin(), orderedDistance.end(), id);
+    if (it != orderedNames.end()) {
+        // Erase the element
+        orderedNames.erase(it);
+    }
+
+    if (it2 != orderedDistance.end()) {
+        orderedDistance.erase(it2);
+    }
+
+    double dist = sqrt(pow(aff[id].coords.x,2) + pow(aff[id].coords.y,2));
+    if (test[dist].size() == 1){
+        test.erase(dist);
+    }else{
+        for (auto it = test[dist].begin(); it != test[dist].end(); it++){
+            if (it->affId == id){
+                test[dist].erase(it);
+                break;
+            }
+        }
+
+    }
+
     aff.erase(id);
+
+
     return true;
 }
 

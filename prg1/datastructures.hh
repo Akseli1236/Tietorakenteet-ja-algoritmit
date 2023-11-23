@@ -272,7 +272,6 @@ private:
     bool sorted_name;
     std::vector<AffiliationID> orderedNames;
     std::vector<AffiliationID> orderedDistance;
-    std::vector<std::pair<double, std::vector<Data>>> kek;
 
 };
 
