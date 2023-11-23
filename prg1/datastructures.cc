@@ -360,16 +360,9 @@ std::vector<PublicationID> Datastructures::get_referenced_by_chain(PublicationID
     if (pub[id].parent != nullptr){
         chain.push_back(pub[id].parent->pubId);
         auto getParent = get_referenced_by_chain(pub[id].parent->pubId);
-        std::cout << getParent.empty() << ":";
         chain.insert(chain.begin(), getParent.begin(), getParent.end());
     }
-    if (!chain.empty()){
-        std::reverse(chain.begin(), chain.end());
-    }
-    std::cout << chain.empty() << ":";
-    if (chain.size() == 1){
-        std::cout << chain.at(0) << std::endl;
-    }
+    std::reverse(chain.begin(), chain.end());
     return chain;
 }
 
