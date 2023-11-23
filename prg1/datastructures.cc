@@ -54,6 +54,7 @@ void Datastructures::clear_all()
     //affdist.clear();
     affName.clear();
     test.clear();
+    kek.clear();
 }
 
 std::vector<AffiliationID> Datastructures::get_all_affiliations()
@@ -162,12 +163,10 @@ AffiliationID Datastructures::find_affiliation_with_coord(Coord xy)
 {
     double dist = sqrt(pow(xy.x,2) + pow(xy.y,2));
     if (test[dist].size() == 1){
-        std::cout << test[dist].at(0).name << std::endl;
         return test[dist].at(0).affId;
     }
 
     for (const auto& it : test[dist]){
-        std::cout << it.name << it.coords.x << it.coords.y << std::endl;
         if (it.coords == xy){
             return it.affId;
         }
