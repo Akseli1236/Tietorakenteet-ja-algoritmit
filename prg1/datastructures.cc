@@ -424,10 +424,28 @@ bool Datastructures::remove_affiliation(AffiliationID id)
     return true;
 }
 
-PublicationID Datastructures::get_closest_common_parent(PublicationID /*id1*/, PublicationID /*id2*/)
+PublicationID Datastructures::get_closest_common_parent(PublicationID id1, PublicationID id2)
 {
-    // Replace the line below with your implementation
-    throw NotImplemented("get_closest_common_parent()");
+    if (pub.find(id1) == pub.end() || pub.find(id2) == pub.end()){
+        return NO_PUBLICATION;
+    }
+    if (id1 == id2){
+        return id1;
+    }
+    auto parent1 = pub[id1].parent;
+    auto parent2 = pub[id2].parent;
+    if (parent1 == parent2){
+        return parent1->pubId;
+    }
+    if (parent1 != nullptr && parent2 != nullptr){
+        return get_closest_common_parent(parent1->pubId, parent2->pubId);
+    }else if (parent1 != nullptr && parent2 == nullptr){
+        return get_closest_common_parent(parent1->pubId, id2);
+    }else if (parent1 == nullptr && parent2 != nullptr){
+        return get_closest_common_parent(id1, parent2->pubId);
+    }
+
+    return NO_PUBLICATION;
 }
 
 bool Datastructures::remove_publication(PublicationID publicationid)
