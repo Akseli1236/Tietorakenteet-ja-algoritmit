@@ -355,26 +355,23 @@ std::vector<AffiliationID> Datastructures::get_affiliations_closest_to(Coord xy)
 {
     double dist = sqrt(pow(xy.x,2) + pow(xy.y,2));
 
-    std::vector<double> sortedKeys;
+    std::vector<std::pair<double, AffiliationID>> sortedKeys;
     std::vector<AffiliationID> IDs;
 
-    for (const auto& entry : test) {
-        sortedKeys.push_back(entry.first);
+    for (const auto& entry : aff) {
+        double distance = sqrt(pow(xy.x-entry.second.coords.x,2)+pow(xy.y-entry.second.coords.y,2));
+        sortedKeys.push_back({distance, entry.first});
+
     }
 
-    std::sort(sortedKeys.begin(), sortedKeys.end(), [dist](double a, double b) {
-        return std::abs(a - dist) < std::abs(b - dist);
-    });
+    std::sort(sortedKeys.begin(), sortedKeys.end());
     sortedKeys.erase( unique( sortedKeys.begin(), sortedKeys.end() ), sortedKeys.end() );
 
-    for (auto i : sortedKeys){
-        for (const auto& m : test[i]){
-            if (IDs.size() != 3){
-                IDs.push_back(m.affId);
-            }
+    for (const auto& i : sortedKeys){
 
+        if (IDs.size() != 3){
+            IDs.push_back(i.second);
         }
-
 
     }
     return IDs;
