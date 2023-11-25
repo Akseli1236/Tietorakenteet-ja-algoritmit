@@ -51,7 +51,6 @@ void Datastructures::clear_all()
 {
     aff.clear();
     pub.clear();
-    //affdist.clear();
     affName.clear();
     test.clear();
     orderedNames.clear();
@@ -72,7 +71,6 @@ bool Datastructures::add_affiliation(AffiliationID id, const Name &name, Coord x
     double dist = sqrt(pow(xy.x,2) + pow(xy.y,2));
     Data newData = {name, xy, id};
     aff[id] = newData;
-    //affdist[dist].push_back(newData);
     affName[name] = newData;
     test[dist].push_back(newData);
     // Replace the line below with your implementation
@@ -203,35 +201,6 @@ bool Datastructures::change_affiliation_coord(AffiliationID id, Coord newcoord)
     }
 
     return false;
-/*
-    int i = 0;
-    if (aff.find(id) != aff.end()){
-        auto oldCoord = aff[id].coords;
-        double dist = sqrt(pow(oldCoord.x,2) + pow(oldCoord.y,2));
-
-        aff[id].coords = newcoord;
-
-        double newdist = sqrt(pow(newcoord.x,2) + pow(newcoord.y,2));
-        auto it = affdist.find(dist);
-
-        Data newData = {};
-        for (const auto& data : it->second){
-            if (data.coords == oldCoord){
-                newData = data;
-                newData.coords = newcoord;
-                break;
-            }
-            i++;
-
-        }
-        it->second.erase(it->second.begin() + i);
-        affdist[newdist].push_back(newData);
-
-        return true;
-    }
-
-    return false;
- */
 
 }
 
@@ -382,10 +351,34 @@ std::vector<PublicationID> Datastructures::get_all_references(PublicationID id)
     return references;
 }
 
-std::vector<AffiliationID> Datastructures::get_affiliations_closest_to(Coord /*xy*/)
+std::vector<AffiliationID> Datastructures::get_affiliations_closest_to(Coord xy)
 {
-    // Replace the line below with your implementation
-    throw NotImplemented("get_affiliations_closest_to()");
+    double dist = sqrt(pow(xy.x,2) + pow(xy.y,2));
+
+    std::vector<double> sortedKeys;
+    std::vector<AffiliationID> IDs;
+
+    for (const auto& entry : test) {
+        sortedKeys.push_back(entry.first);
+    }
+
+    std::sort(sortedKeys.begin(), sortedKeys.end(), [dist](double a, double b) {
+        return std::abs(a - dist) < std::abs(b - dist);
+    });
+    sortedKeys.erase( unique( sortedKeys.begin(), sortedKeys.end() ), sortedKeys.end() );
+
+    for (auto i : sortedKeys){
+        for (const auto& m : test[i]){
+            if (IDs.size() != 3){
+                IDs.push_back(m.affId);
+            }
+
+        }
+
+
+    }
+    return IDs;
+
 }
 
 bool Datastructures::remove_affiliation(AffiliationID id)
