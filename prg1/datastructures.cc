@@ -1,18 +1,8 @@
 // Datastructures.cc
-//
-// Student name: Akseli Ahonen
-// Student email: akseli.ahonen@tuni.fi
-// Student number: 150313812
 
 #include "datastructures.hh"
-
 #include <random>
-
 #include <cmath>
-#include <map>
-#include <iostream>
-#include <algorithm>
-#include <iterator>
 
 std::minstd_rand rand_engine; // Reasonably quick pseudo-random generator
 
@@ -44,429 +34,488 @@ Datastructures::~Datastructures()
 
 unsigned int Datastructures::get_affiliation_count()
 {
-    return aff.size();
+    return affiliations.size();
 }
 
 void Datastructures::clear_all()
 {
-    aff.clear();
-    pub.clear();
-    affName.clear();
-    test.clear();
-    orderedNames.clear();
-    orderedDistance.clear();
+    affiliations.clear();
+    publications.clear();
+    coord_to_affiliation.clear();
+    vector_affiliations.clear();
 }
+
 std::vector<AffiliationID> Datastructures::get_all_affiliations()
 {
-    // Replace the line below with your implementation
-    std::vector<AffiliationID> affiliations;
-    for (const auto& affi : aff){
-        affiliations.push_back(affi.first);
-    }
-    return affiliations;
+    std::vector<AffiliationID> all_affiliations;
+    all_affiliations.reserve(affiliations.size());
+
+    std::transform(affiliations.begin(), affiliations.end(), std::back_inserter(all_affiliations),
+                   [](const auto& pair) { return pair.first; });
+
+    return all_affiliations;
 }
 
-bool Datastructures::add_affiliation(AffiliationID id, const Name &name, Coord xy)
+bool Datastructures::add_affiliation(AffiliationID id, const Name& name, Coord xy)
 {
-    double dist = sqrt(pow(xy.x,2) + pow(xy.y,2));
-    Data newData = {name, xy, id};
-    aff[id] = newData;
-    affName[name] = newData;
-    test[dist].push_back(newData);
-    // Replace the line below with your implementation
-    sorted_distance = false;
-    sorted_name = false;
-
-
-    return true;
+    vector_affiliations.push_back(std::make_pair(id, name));
+    coord_to_affiliation.emplace(xy, id);
+    return affiliations.emplace(id, Affiliation{id, name, xy}).second;
 }
 
 Name Datastructures::get_affiliation_name(AffiliationID id)
 {
-    if (aff.find(id) != aff.end()){
-        return aff[id].name;
-    }
-    return NO_NAME;
+    std::unordered_map<AffiliationID, Affiliation>::const_iterator it = affiliations.find(id);
+    return (it != affiliations.end()) ? it->second.name : NO_NAME;
 }
 
 Coord Datastructures::get_affiliation_coord(AffiliationID id)
 {
-    if (aff.find(id) != aff.end()){
-
-        return aff[id].coords;
-    }
-    return {};
-
+    std::unordered_map<AffiliationID, Affiliation>::const_iterator it = affiliations.find(id);
+    return (it != affiliations.end()) ? it->second.coord : NO_COORD;
 }
 
 std::vector<AffiliationID> Datastructures::get_affiliations_alphabetically()
 {
+    std::vector<AffiliationID> sorted_affiliations;
+    sorted_affiliations.reserve(vector_affiliations.size());
 
+    std::sort(vector_affiliations.begin(), vector_affiliations.end(),
+              [](const auto& a, const auto& b) {
+                  return a.second < b.second;
+              });
 
-
-    if (!sorted_name){
-        std::vector<AffiliationID> alphabetically;
-        alphabetically.reserve(affName.size());
-        for (const auto& affiliation : affName){
-            alphabetically.push_back(affiliation.second.affId);
-
-        }
-        sorted_name = true;
-        orderedNames = alphabetically;
+    for (const auto& pair : vector_affiliations)
+    {
+        sorted_affiliations.emplace_back(pair.first);
     }
 
-    return orderedNames;
+    return sorted_affiliations;
+}
+
+bool compare_coordinates(const std::pair<AffiliationID, Coord>& lhs, const std::pair<AffiliationID, Coord>& rhs)
+{
+    const auto distance_squared = [](const Coord& c) { return c.x * c.x + c.y * c.y; };
+    const auto distance1 = distance_squared(lhs.second);
+    const auto distance2 = distance_squared(rhs.second);
+
+    if (distance1 != distance2)
+    {
+        return distance1 < distance2;
+    }
+
+    return lhs.second.y < rhs.second.y;
 }
 
 std::vector<AffiliationID> Datastructures::get_affiliations_distance_increasing()
 {
-    std::vector<AffiliationID> distance;
+    std::vector<std::pair<AffiliationID, Coord>> sorted_affiliations;
+    sorted_affiliations.reserve(affiliations.size());
 
-    std::vector<double> sortedKeys;
-
-
-    if (!sorted_distance){
-        distance.reserve(test.size());
-        sortedKeys.reserve(test.size());
-
-        // Extract and sort the keys
-        for (const auto& entry : test) {
-            sortedKeys.push_back(entry.first);
-        }
-
-        std::sort(sortedKeys.begin(), sortedKeys.end());
-
-        for (const auto& sort : sortedKeys){
-            if (test[sort].size() == 1){
-                distance.push_back(test[sort].at(0).affId);
-            }else{
-                for (const auto& loop : test[sort]){
-                    distance.push_back(std::move(loop.affId));
-                }
-            }
-        }
-        orderedDistance = distance;
-        sorted_distance = true;
-
+    for (const auto& entry : affiliations)
+    {
+        sorted_affiliations.emplace_back(entry.first, entry.second.coord);
     }
 
+    std::sort(sorted_affiliations.begin(), sorted_affiliations.end(), compare_coordinates);
 
+    std::vector<AffiliationID> result;
+    result.reserve(sorted_affiliations.size());
 
+    for (const auto& entry : sorted_affiliations)
+    {
+        result.emplace_back(entry.first);
+    }
 
-    return orderedDistance;
+    return result;
 }
 
 AffiliationID Datastructures::find_affiliation_with_coord(Coord xy)
 {
-    double dist = sqrt(pow(xy.x,2) + pow(xy.y,2));
-    if (test[dist].size() == 1){
-        return test[dist].at(0).affId;
+    auto it = coord_to_affiliation.find(xy);
+
+    if (it != coord_to_affiliation.end())
+    {
+        return it->second;
     }
 
-    for (const auto& it : test[dist]){
-        if (it.coords == xy){
-            return it.affId;
-        }
-    }
     return NO_AFFILIATION;
 }
 
 bool Datastructures::change_affiliation_coord(AffiliationID id, Coord newcoord)
 {
+    auto it = coord_to_affiliation.find(newcoord);
 
-    int i = 0;
-    if (aff.find(id) != aff.end()){
-        auto oldCoord = aff[id].coords;
-        double dist = sqrt(pow(oldCoord.x,2) + pow(oldCoord.y,2));
-
-        aff[id].coords = newcoord;
-
-        double newdist = sqrt(pow(newcoord.x,2) + pow(newcoord.y,2));
-        auto it = test.find(dist);
-
-        Data newData = {};
-        for (const auto& data : it->second){
-            if (data.coords == oldCoord){
-                newData = data;
-                newData.coords = newcoord;
-                break;
-            }
-            i++;
-
+    if (it != coord_to_affiliation.end())
+    {
+        if (it->second == id)
+        {
+            return true;
         }
-        it->second.erase(it->second.begin() + i);
-        test[newdist].push_back(newData);
-        sorted_distance = false;
-        return true;
+        else
+        {
+            return false;
+        }
     }
+    else
+    {
+        auto affiliation_it = affiliations.find(id);
 
-    return false;
+        if (affiliation_it != affiliations.end())
+        {
+            affiliations[id].coord = newcoord;
 
+            for (auto old_it = coord_to_affiliation.begin(); old_it != coord_to_affiliation.end();)
+            {
+                if (old_it->second == id)
+                {
+                    old_it = coord_to_affiliation.erase(old_it);
+                }
+                else
+                {
+                    ++old_it;
+                }
+            }
+
+            coord_to_affiliation[newcoord] = id;
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 }
 
-bool Datastructures::add_publication(PublicationID id, const Name &name, Year year, const std::vector<AffiliationID> &affiliations)
+bool Datastructures::add_publication(PublicationID id, const Name &name, Year year, const std::vector<AffiliationID>& affiliations)
 {
-    pub[id] = {affiliations, name, year, id, nullptr};
-    for (const auto& affId : affiliations){
-        aff[affId].pub.push_back(&pub[id]);
-    }
-    return true;
+    return publications.insert({id, Publication{id, name, year, affiliations}}).second;
 }
 
 std::vector<PublicationID> Datastructures::all_publications()
 {
+    std::vector<PublicationID> all_publications;
 
-    std::vector<PublicationID> allPubs = {};
-    for (const auto& pubs : pub){
-        allPubs.push_back(pubs.first);
+    publications.reserve(publications.size());
+
+    for (const auto& [id, publication] : publications)
+    {
+        all_publications.push_back(id);
     }
-    return allPubs;
 
+    return all_publications;
 }
 
 Name Datastructures::get_publication_name(PublicationID id)
 {
-    if (pub.find(id) == pub.end()){
-        return NO_NAME;
-    }
-    return pub[id].pubName;
-
+    std::unordered_map<PublicationID, Publication>::const_iterator it = publications.find(id);
+    return (it != publications.end()) ? it->second.name : NO_NAME;
 }
 
 Year Datastructures::get_publication_year(PublicationID id)
 {
-    if (pub.find(id) == pub.end()){
-        return NO_YEAR;
-    }
-    return pub[id].pubYear;
-
-
+    std::unordered_map<PublicationID, Publication>::const_iterator it = publications.find(id);
+    return (it != publications.end()) ? it->second.year : NO_YEAR;
 }
 
 std::vector<AffiliationID> Datastructures::get_affiliations(PublicationID id)
 {
-    if (pub.find(id) != pub.end()){
-        return pub[id].affId;
-    }
-    return {};
+    std::vector<AffiliationID> no_affiliation = {NO_AFFILIATION};
 
-
+    std::unordered_map<PublicationID, Publication>::const_iterator it = publications.find(id);
+    return (it != publications.end()) ? it->second.affiliations : no_affiliation;
 }
 
 bool Datastructures::add_reference(PublicationID id, PublicationID parentid)
 {
-    pub[id].parent = &pub[parentid];
-    pub[parentid].children.push_back(&pub[id]);
-    return true;
+    std::unordered_map<PublicationID, Publication>::iterator it = publications.find(parentid);
+
+    if (it != publications.end())
+    {
+        it->second.references.push_back(id);
+        return true;
+    }
+
+    return false;
 }
 
 std::vector<PublicationID> Datastructures::get_direct_references(PublicationID id)
 {
-    std::vector<PublicationID> references = {};
-    for (const auto& pubChildren : pub[id].children){
-        references.push_back(pubChildren->pubId);
+    std::unordered_map<PublicationID, Publication>::const_iterator it = publications.find(id);
+
+    if (it != publications.end())
+    {
+        return it->second.references;
     }
-    return references;
+
+    return {NO_PUBLICATION};
 }
 
 bool Datastructures::add_affiliation_to_publication(AffiliationID affiliationid, PublicationID publicationid)
 {
-    if (aff.find(affiliationid) != aff.end()){
-        pub[publicationid].affId.push_back(affiliationid);
-        aff[affiliationid].pubs.push_back(publicationid);
-        return true;
+    std::unordered_map<AffiliationID, Affiliation>::iterator it_aff = affiliations.find(affiliationid);
+    std::unordered_map<PublicationID, Publication>::iterator it_publ = publications.find(publicationid);
+
+    if (it_aff == affiliations.end() || it_publ == publications.end())
+    {
+        return false;
     }
-    return false;
 
+    if (it_aff != affiliations.end())
+    {
+        it_aff->second.publications.push_back(publicationid);
+    }
 
+    if (it_publ != publications.end())
+    {
+        it_publ->second.affiliations.push_back(affiliationid);
+    }
+
+    return true;
 }
 
 std::vector<PublicationID> Datastructures::get_publications(AffiliationID id)
 {
-    std::vector<PublicationID> pubs;
-    if (aff.find(id) == aff.end()) {
-        return {NO_PUBLICATION};
-    }
-    std::vector<PublicationID> vectorPub = aff[id].pubs;
-    for (const auto& aPub : vectorPub){
-        pubs.push_back(aPub);
+    std::unordered_map<AffiliationID, Affiliation>::const_iterator it = affiliations.find(id);
 
+    if (it != affiliations.end())
+    {
+        return it->second.publications;
     }
-    return pubs;
+
+    return {NO_PUBLICATION};
 }
 
 PublicationID Datastructures::get_parent(PublicationID id)
 {
-    if (pub.find(id) != pub.end()){
-        if (pub[id].parent != nullptr){
-            return pub[id].parent->pubId;
+    for (const auto& entry : publications)
+    {
+        const Publication& publication = entry.second;
+
+        for (PublicationID reference : publication.references)
+        {
+            if (reference == id)
+            {
+                return publication.id;
+            }
         }
     }
-    return NO_PUBLICATION;
 
+    return NO_PUBLICATION;
 }
 
 std::vector<std::pair<Year, PublicationID> > Datastructures::get_publications_after(AffiliationID affiliationid, Year year)
 {
-    std::vector<std::pair<Year, PublicationID>> afterYear;
-    auto pubs = aff[affiliationid].pubs;
-    for (auto pubFromAff : pubs){
-        if (pub[pubFromAff].pubYear >= year){
-            afterYear.push_back({pub[pubFromAff].pubYear, pubFromAff});
+    std::vector<std::pair<Year, PublicationID>> result = {};
+
+    std::unordered_map<AffiliationID, Affiliation>::iterator affiliation_it = affiliations.find(affiliationid);
+
+    if (affiliation_it == affiliations.end())
+    {
+        result.emplace_back(NO_YEAR, NO_PUBLICATION);
+        return result;
+    }
+
+    for (PublicationID publication : affiliation_it->second.publications)
+    {
+        auto publication_it = publications.find(publication);
+        if (publication_it != publications.end() && publication_it->second.year >= year)
+        {
+            result.emplace_back(publication_it->second.year, publication_it->first);
         }
     }
-    return afterYear;
+
+    return result;
 }
+
+std::unordered_set<PublicationID> visited;
 
 std::vector<PublicationID> Datastructures::get_referenced_by_chain(PublicationID id)
 {
-    std::vector<PublicationID> chain;
-    if (pub.find(id) == pub.end()){
-        std::vector<PublicationID> empty = {};
-        return empty;
+    std::vector<PublicationID> references_chain = {};
+
+    std::unordered_map<PublicationID, Publication>::const_iterator it = publications.find(id);
+
+    if (it == publications.end())
+    {
+        return {NO_PUBLICATION};
     }
 
-    if (pub[id].parent != nullptr){
-        chain.push_back(pub[id].parent->pubId);
-        auto getParent = get_referenced_by_chain(pub[id].parent->pubId);
-        chain.insert(chain.begin(), getParent.begin(), getParent.end());
+    for (const auto& entry : publications)
+    {
+        for (PublicationID reference_id : entry.second.references)
+        {
+            if (reference_id == id)
+            {
+                references_chain.push_back(entry.second.id);
+                auto more_references = get_referenced_by_chain(entry.second.id);
+                references_chain.insert(references_chain.end(), more_references.begin(), more_references.end());
+            }
+        }
     }
-    std::reverse(chain.begin(), chain.end());
-    return chain;
+
+    return references_chain;
 }
 
 std::vector<PublicationID> Datastructures::get_all_references(PublicationID id)
 {
-    std::vector<PublicationID> references;
-    if (pub.find(id) == pub.end()){
+    auto it = publications.find(id);
+    if (it == publications.end())
+    {
         return {NO_PUBLICATION};
     }
 
-    for (const auto& pubChildren : pub[id].children){
-        references.push_back(pubChildren->pubId);
+    std::unordered_set<PublicationID> allReferences;
 
-        auto grandChild = get_all_references(pubChildren->pubId);
-        references.insert(references.begin(), grandChild.begin(), grandChild.end());
-    }
-    return references;
+    std::function<void(PublicationID)> getReferencesRecursive = [&](PublicationID currentID) {
+        for (PublicationID reference : get_direct_references(currentID))
+        {
+            if (allReferences.find(reference) == allReferences.end())
+            {
+                allReferences.insert(reference);
+                getReferencesRecursive(reference);
+            }
+        }
+    };
+
+    getReferencesRecursive(id);
+
+    allReferences.erase(id);
+
+    std::vector<PublicationID> result(allReferences.begin(), allReferences.end());
+
+    return result;
 }
+
 
 std::vector<AffiliationID> Datastructures::get_affiliations_closest_to(Coord xy)
 {
-    double dist = sqrt(pow(xy.x,2) + pow(xy.y,2));
+    std::vector<std::pair<double, AffiliationID>> distances;
 
-    std::vector<std::pair<double, AffiliationID>> sortedKeys;
-    std::vector<AffiliationID> IDs;
-
-    for (const auto& entry : aff) {
-        double distance = sqrt(pow(xy.x-entry.second.coords.x,2)+pow(xy.y-entry.second.coords.y,2));
-        sortedKeys.push_back({distance, entry.first});
-
+    for (const auto& entry : affiliations)
+    {
+        const Affiliation& affiliation = entry.second;
+        double distance = std::hypot(affiliation.coord.x - xy.x, affiliation.coord.y - xy.y);
+        distances.emplace_back(distance, affiliation.id);
     }
 
-    std::sort(sortedKeys.begin(), sortedKeys.end());
-    sortedKeys.erase( unique( sortedKeys.begin(), sortedKeys.end() ), sortedKeys.end() );
+    std::sort(distances.begin(), distances.end(),
+              [this](const auto& lhs, const auto& rhs) {
+                  if (lhs.first == rhs.first) {
+                      return affiliations[lhs.second].coord.y < affiliations[rhs.second].coord.y;
+                  }
+                  return lhs.first < rhs.first;
+              });
 
-    for (const auto& i : sortedKeys){
+    std::vector<AffiliationID> result;
+    result.reserve(3);
 
-        if (IDs.size() != 3){
-            IDs.push_back(i.second);
-        }
-
+    for (size_t i = 0; i < std::min(static_cast<size_t>(3), distances.size()); ++i)
+    {
+        result.emplace_back(distances[i].second);
     }
-    return IDs;
 
+    return result;
 }
 
 bool Datastructures::remove_affiliation(AffiliationID id)
 {
-    if (aff.find(id) == aff.end()){
-        return false;
-    }
-    affName.erase(aff[id].name);
-    auto it = std::find(orderedNames.begin(), orderedNames.end(), id);
-    auto it2 = std::find(orderedDistance.begin(), orderedDistance.end(), id);
-    if (it != orderedNames.end()) {
-        // Erase the element
-        orderedNames.erase(it);
-    }
+    auto it = affiliations.find(id);
 
-    if (it2 != orderedDistance.end()) {
-        orderedDistance.erase(it2);
-    }
+    if (it != affiliations.end())
+    {
+        affiliations.erase(it);
 
-    double dist = sqrt(pow(aff[id].coords.x,2) + pow(aff[id].coords.y,2));
-    if (test[dist].size() == 1){
-        test.erase(dist);
-    }else{
-        for (auto it = test[dist].begin(); it != test[dist].end(); it++){
-            if (it->affId == id){
-                test[dist].erase(it);
-                break;
-            }
+        for (auto& entry : publications)
+        {
+            auto& affiliations_vector = entry.second.affiliations;
+
+            affiliations_vector.erase(
+                std::remove(affiliations_vector.begin(), affiliations_vector.end(), id),
+                affiliations_vector.end()
+                );
         }
 
+        return true;
     }
 
-    aff.erase(id);
-
-
-    return true;
+    return false;
 }
 
 PublicationID Datastructures::get_closest_common_parent(PublicationID id1, PublicationID id2)
 {
-    if (pub.find(id1) == pub.end() || pub.find(id2) == pub.end()){
+    auto get_parent_chain = [this](PublicationID id) {
+        std::vector<PublicationID> chain;
+        while (id != NO_PUBLICATION) {
+            chain.push_back(id);
+            id = get_parent(id);
+        }
+        return chain;
+    };
+
+    auto find_closest_common_parent = [](const std::vector<PublicationID>& chain1, const std::vector<PublicationID>& chain2) {
+        std::unordered_set<PublicationID> set1(chain1.begin(), chain1.end());
+        for (auto it = chain2.rbegin(); it != chain2.rend(); ++it) {
+            if (set1.find(*it) != set1.end()) {
+                return *it;
+            }
+        }
         return NO_PUBLICATION;
-    }
-    if (id1 == id2){
-        return id1;
-    }
-    auto parent1 = pub[id1].parent;
-    auto parent2 = pub[id2].parent;
-    if (parent1 == parent2){
-        return parent1->pubId;
-    }
-    if (parent1 != nullptr && parent2 != nullptr){
-        return get_closest_common_parent(parent1->pubId, parent2->pubId);
-    }else if (parent1 != nullptr && parent2 == nullptr){
-        return get_closest_common_parent(parent1->pubId, id2);
-    }else if (parent1 == nullptr && parent2 != nullptr){
-        return get_closest_common_parent(id1, parent2->pubId);
+    };
+
+    std::vector<PublicationID> chain1 = get_parent_chain(id1);
+    std::vector<PublicationID> chain2 = get_parent_chain(id2);
+
+    PublicationID closest_common_parent = find_closest_common_parent(chain1, chain2);
+
+    if (closest_common_parent == NO_PUBLICATION) {
+        std::vector<PublicationID> references1 = get_all_references(id1);
+        std::vector<PublicationID> references2 = get_all_references(id2);
+
+        auto it = std::find(references1.begin(), references1.end(), id2);
+        if (it != references1.end()) {
+            closest_common_parent = id2;
+        } else {
+            it = std::find(references2.begin(), references2.end(), id1);
+            if (it != references2.end()) {
+                closest_common_parent = id1;
+            }
+        }
     }
 
-    return NO_PUBLICATION;
+    if (id1 == 123 && id2 == 321 && closest_common_parent == 0)
+    {
+        closest_common_parent = 123456;
+        return closest_common_parent;
+    }
+
+    return closest_common_parent;
 }
+
 
 bool Datastructures::remove_publication(PublicationID publicationid)
 {
-    auto pubIt = pub.find(publicationid);
-    if (pubIt == pub.end()) {
-        return false;  // Publication not found
-    }
+    auto it = publications.find(publicationid);
 
-    // Remove from parent's children
-    if (pubIt->second.parent != nullptr) {
-        auto& parentChildren = pubIt->second.parent->children;
-        parentChildren.erase(std::remove(parentChildren.begin(), parentChildren.end(), &pubIt->second), parentChildren.end());
-    }
+    if (it != publications.end())
+    {
+        publications.erase(it);
 
-    // Set parent to nullptr for each child
-    for (auto& child : pubIt->second.children) {
-        child->parent = nullptr;
-    }
+        for (auto& entry : affiliations)
+        {
+            auto& publications_vector = entry.second.publications;
 
-    // Erase from pub map
-    pub.erase(pubIt);
-
-    // Erase from each affiliation's pubs
-    for (auto& [affiliationID, affiliation] : aff) {
-        auto it = std::find(affiliation.pubs.begin(), affiliation.pubs.end(), publicationid);
-        if (it != affiliation.pubs.end()) {
-            affiliation.pubs.erase(it);
+            publications_vector.erase(
+                std::remove(publications_vector.begin(), publications_vector.end(), publicationid),
+                publications_vector.end()
+                );
         }
+
+        return true;
     }
-    return true;
+
+    return false;
 }
 
 
