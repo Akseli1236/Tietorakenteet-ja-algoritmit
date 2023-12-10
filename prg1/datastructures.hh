@@ -260,6 +260,7 @@ private:
     std::unordered_map<Coord, AffiliationID, CoordHash> coord_to_affiliation;
     std::unordered_map<AffiliationID, Affiliation> affiliations = {};
     std::unordered_map<PublicationID, Publication> publications = {};
+    bool sorted_aff = false;
 };
 
 #endif // DATASTRUCTURES_HH

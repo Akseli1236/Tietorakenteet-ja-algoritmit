@@ -59,6 +59,7 @@ std::vector<AffiliationID> Datastructures::get_all_affiliations()
 bool Datastructures::add_affiliation(AffiliationID id, const Name& name, Coord xy)
 {
     vector_affiliations.push_back(std::make_pair(id, name));
+    sorted_aff = false;
     coord_to_affiliation.emplace(xy, id);
     return affiliations.emplace(id, Affiliation{id, name, xy}).second;
 }
@@ -79,11 +80,14 @@ std::vector<AffiliationID> Datastructures::get_affiliations_alphabetically()
 {
     std::vector<AffiliationID> sorted_affiliations;
     sorted_affiliations.reserve(vector_affiliations.size());
+    if (!sorted_aff){
+        std::sort(vector_affiliations.begin(), vector_affiliations.end(),
+                  [](const auto& a, const auto& b) {
+                      return a.second < b.second;
+                  });
+        sorted_aff = true;
 
-    std::sort(vector_affiliations.begin(), vector_affiliations.end(),
-              [](const auto& a, const auto& b) {
-                  return a.second < b.second;
-              });
+    }
 
     for (const auto& pair : vector_affiliations)
     {
