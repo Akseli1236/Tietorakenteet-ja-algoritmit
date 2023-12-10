@@ -1,4 +1,8 @@
 // Datastructures.hh
+//
+// Student name:
+// Student email:
+// Student number:
 
 #ifndef DATASTRUCTURES_HH
 #define DATASTRUCTURES_HH
@@ -10,8 +14,6 @@
 #include <limits>
 #include <functional>
 #include <exception>
-#include <unordered_set>
-#include <stack>
 
 // Types for IDs
 using AffiliationID = std::string;
@@ -87,6 +89,22 @@ private:
     std::string msg_;
 };
 
+// Define affiliation and publication struct
+struct Affiliation
+{
+    AffiliationID id_a;
+    Name name;
+    Coord coord;
+};
+
+struct Publication
+{
+    PublicationID id_p;
+    Name title;
+    Year year;
+    std::vector<AffiliationID> affiliations;
+};
+
 // This is the class you are supposed to implement
 
 class Datastructures
@@ -95,124 +113,100 @@ public:
     Datastructures();
     ~Datastructures();
 
-    // Estimate of performance: O(1)
-    // Short rationale for estimate: size() returns the number
-    // of elements in the container
+    // Estimate of performance:O(1)
+    // Short rationale for estimate:unordered_map is a hash table structure
     unsigned int get_affiliation_count();
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: clear() clears N number
-    // of elements in the container
+    // Estimate of performance:O(n)
+    // Short rationale for estimate:add or delete one element into unordered_map is O(1),this operation delete n elements
     void clear_all();
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: reserve-operation is O(1) on average
-    // and loop goes iterates over unordered_map so it's O(n)
+    // Estimate of performance:O(n)
+    // Short rationale for estimate:traverse all n elements in unordered_map
     std::vector<AffiliationID> get_all_affiliations();
 
-    // Estimate of performance: O(1)
-    // Short rationale for estimate: unordered_map insert() is
-    // constant
+    // Estimate of performance:O(1)
+    // Short rationale for estimate:add one element into unordered_map is O(1)
     bool add_affiliation(AffiliationID id, Name const& name, Coord xy);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: unordered_map find() is constant
-    // on average and ternary operator which has comparison is also
-    // constant on average
+    // Estimate of performance:O(n)
+    // Short rationale for estimate:search one element with key in unordered_map is O(n)
     Name get_affiliation_name(AffiliationID id);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: unordered_map find() is constant
-    // on average and ternary operator which has comparison is also
-    // constant on average
+    // Estimate of performance:O(n)
+    // Short rationale for estimate:search one element with key in unordered_map is O(n)
     Coord get_affiliation_coord(AffiliationID id);
+
 
     // We recommend you implement the operations below only after implementing the ones above
 
-    // Estimate of performance: O(n*log(n))
-    // Short rationale for estimate: std::transform operation is O(n), but
-    // std:: sort operation is O(n*log(n))
+    // Estimate of performance:O(n*log(n))
+    // Short rationale for estimate:For the traversal of an unordered_map is O(n) and sort for vector is O(n*log(n)). So in general, for the whole function it is O(n*log(n))
     std::vector<AffiliationID> get_affiliations_alphabetically();
 
-    // Estimate of performance: O(n*log(n))
-    // Short rationale for estimate: For loop populates vector so it's O(n) and
-    // std::sort operation is O(n*log(n))
+    // Estimate of performance:O(n*log(n))
+    // Short rationale for estimate:For the traversal of an unordered_map and a vector is O(n) and sort for vector is O(n*log(n)). So in general, for the whole function it is O(n*log(n))
     std::vector<AffiliationID> get_affiliations_distance_increasing();
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: For loop iterates through each element
-    // in the map
+    // Estimate of performance:O(n)
+    // Short rationale for estimate:traversal of an unordered_map is O(n)
     AffiliationID find_affiliation_with_coord(Coord xy);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: unordered_map find() average complexity is O(1)
-    // and changing coord 'it->second.coord = newcoord' is constant
+    // Estimate of performance:O(n)
+    // Short rationale for estimate:search an element with key in unordered_map is O(n)
     bool change_affiliation_coord(AffiliationID id, Coord newcoord);
 
 
     // We recommend you implement the operations below only after implementing the ones above
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: Complexity of unordered_map insert is O(1) and
-    // function doesn't do anything else
+    // Estimate of performance:O(n)
+    // Short rationale for estimate:search an element with key in unordered_map is O(n) and add an element into an unordered_map is also O(n)
     bool add_publication(PublicationID id, Name const& name, Year year, const std::vector<AffiliationID> & affiliations);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: Loop populating vector has time complexity O(n)
-    // and reserve operation has time complexity O(1)
+    // Estimate of performance:O(n)
+    // Short rationale for estimate:traversal of an unordered_map is O(n)
     std::vector<PublicationID> all_publications();
 
-    // Estimate of performance: O(1)
-    // Short rationale for estimate: unordered_map find time complexity is O(1)
-    // and access to 'it->second.name' is constant time
+    // Estimate of performance:O(1)
+    // Short rationale for estimate:find an element with key in unordered_map is O(1)
     Name get_publication_name(PublicationID id);
 
-    // Estimate of performance: O(1)
-    // Short rationale for estimate: unordered_map find time complexity is O(1)
-    // and access to 'it->second.year' is constant time
+    // Estimate of performance:O(1)
+    // Short rationale for estimate:find an element with key in unordered_map is O(1)
     Year get_publication_year(PublicationID id);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: unordered_map find time complexity is O(1)
-    // and access to 'it->second.affiliations' is constant time
+    // Estimate of performance:O(n)
+    // Short rationale for estimate:search an element with key in unordered_map is O(n)
     std::vector<AffiliationID> get_affiliations(PublicationID id);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: unordered_map find time complexity is O(1)
-    // and checking and inserting reference to 'references' is constant
+    // Estimate of performance:O(n)
+    // Short rationale for estimate:search and element with key in unordered_map is O(n)
     bool add_reference(PublicationID id, PublicationID parentid);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: unordered_map find time complexity is O(1)
-    // and checking and getting 'references' vector is constant
+    // Estimate of performance:O(n)
+    // Short rationale for estimate:find an element with key in unordered_map is O(n)
     std::vector<PublicationID> get_direct_references(PublicationID id);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: unordered_map find time complexity is O(1)
-    // for both iterators and checking and inserting to both vectors are constant
+    // Estimate of performance:O(n)
+    // Short rationale for estimate:find an element with key in unordered_map and add an element to the end of a vector are all O(n)
     bool add_affiliation_to_publication(AffiliationID affiliationid, PublicationID publicationid);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: unordered_map find time complexity is O(1)
-    // and checking and getting 'publications' vector is constant
+    // Estimate of performance:O(n)
+    // Short rationale for estimate:traversal an unordered_map is O(n) and the big O of get_all_affiliations is also O(n)
     std::vector<PublicationID> get_publications(AffiliationID id);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: Nested loops iterates over each entry in
-    // 'publications' and then 'references'
+    // Estimate of performance:O(n)
+    // Short rationale for estimate:traversal an unordered_map is O(n)
     PublicationID get_parent(PublicationID id);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: Primary loop iterates over publications and
-    // the worst case for it is to found from the last.
+    // Estimate of performance:O(n*log(n))
+    // Short rationale for estimate:remove_if for a vector is O(n) and sort for a vector is O(n*log(n)).So in general it is O(n*log(n))
     std::vector<std::pair<Year, PublicationID>> get_publications_after(AffiliationID affiliationid, Year year);
 
-    // Estimate of performance: O(n^2)
-    // Short rationale for estimate: Function uses nested loops and in the
-    // worst case it iterates over the whole data structure
+    // Estimate of performance:O(n)
+    // Short rationale for estimate:find an element in unordered_map is O(n)
     std::vector<PublicationID> get_referenced_by_chain(PublicationID id);
 
-    void get_referenced_by_chain_recursive(PublicationID id, std::vector<PublicationID>& references_chain, std::unordered_set<PublicationID>& visited);
 
     // Non-compulsory operations
 
@@ -235,32 +229,19 @@ public:
     // Estimate of performance:
     // Short rationale for estimate:
     bool remove_publication(PublicationID publicationid);
-    std::vector<PublicationID> get_referenced_by_chain_helper(    PublicationID id,
-                                                              std::unordered_set<PublicationID>& visited);
+
 
 private:
 
-    struct Affiliation {
-        AffiliationID id;
-        Name name;
-        Coord coord;
-        std::vector<PublicationID> publications = {};
-    };
+    // Add affiliation member to class
+    std::unordered_map<AffiliationID, Affiliation> affiliations;
 
-    struct Publication {
-        PublicationID id;
-        Name name;
-        Year year;
-        std::vector<AffiliationID> affiliations = {};
-        std::vector<PublicationID> references = {};
-    };
+    // Add publication member to class
+    std::unordered_map<PublicationID, Publication> publications;
 
-    std::vector<std::pair<AffiliationID, Name>> vector_affiliations;
+    // Add reference relation to class
+    std::unordered_map<PublicationID, std::vector<PublicationID>> references;
 
-    std::unordered_map<Coord, AffiliationID, CoordHash> coord_to_affiliation;
-    std::unordered_map<AffiliationID, Affiliation> affiliations = {};
-    std::unordered_map<PublicationID, Publication> publications = {};
-    bool sorted_aff = false;
 };
 
 #endif // DATASTRUCTURES_HH
