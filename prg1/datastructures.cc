@@ -51,6 +51,7 @@ void Datastructures::clear_all()
 //    throw NotImplemented("clear_all()");
     affiliations.clear();
     publications.clear();
+    sorted_names.clear();
 }
 
 std::vector<AffiliationID> Datastructures::get_all_affiliations()
@@ -69,6 +70,7 @@ bool Datastructures::add_affiliation(AffiliationID id, const Name & name, Coord 
 {
     // Replace the line below with your implementation
 //    throw NotImplemented("add_affiliation()");
+    sorted_state = false;
     std::unordered_map<AffiliationID, Affiliation>::iterator pos = affiliations.find(id);
     if(pos != affiliations.end()){
         return false;
@@ -133,18 +135,20 @@ std::vector<AffiliationID> Datastructures::get_affiliations_alphabetically()
 
 //    return v_id;
 
-    std::vector<AffiliationID> v_id;
-    v_id.reserve(affiliations.size());
+    if (!sorted_state){
+        std::vector<AffiliationID> v_id;
+        sorted_names.reserve(affiliations.size());
+        for(auto& pair : affiliations){
+            v_id.push_back(pair.first);
+        }
 
-    for(auto& pair : affiliations){
-        v_id.push_back(pair.first);
+        std::sort(sorted_names.begin(), sorted_names.end(), [this](auto& l, auto& r){
+            return affiliations[l].name < affiliations[r].name;
+        });
+        sorted_names = v_id;
+        sorted_state = true;
     }
-
-    std::sort(v_id.begin(), v_id.end(), [this](auto& l, auto& r){
-        return affiliations[l].name < affiliations[r].name;
-    });
-
-    return v_id;
+    return sorted_names;
 }
 
 std::vector<AffiliationID> Datastructures::get_affiliations_distance_increasing()

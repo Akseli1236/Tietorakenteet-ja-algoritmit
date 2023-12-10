@@ -235,12 +235,13 @@ private:
 
     // Add affiliation member to class
     std::unordered_map<AffiliationID, Affiliation> affiliations;
-
+    std::vector<AffiliationID> sorted_names;
     // Add publication member to class
     std::unordered_map<PublicationID, Publication> publications;
 
     // Add reference relation to class
     std::unordered_map<PublicationID, std::vector<PublicationID>> references;
+    bool sorted_state = false;
 
 };
 
