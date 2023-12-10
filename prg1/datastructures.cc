@@ -137,12 +137,12 @@ std::vector<AffiliationID> Datastructures::get_affiliations_alphabetically()
 
     if (!sorted_state){
         std::vector<AffiliationID> v_id;
-        sorted_names.reserve(affiliations.size());
+        v_id.reserve(affiliations.size());
         for(auto& pair : affiliations){
             v_id.push_back(pair.first);
         }
 
-        std::sort(sorted_names.begin(), sorted_names.end(), [this](auto& l, auto& r){
+        std::sort(v_id.begin(), v_id.end(), [this](auto& l, auto& r){
             return affiliations[l].name < affiliations[r].name;
         });
         sorted_names = v_id;
