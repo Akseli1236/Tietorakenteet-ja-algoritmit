@@ -322,8 +322,7 @@ std::vector<PublicationID> Datastructures::get_referenced_by_chain(PublicationID
 {
     std::vector<PublicationID> chain;
     if (pub.find(id) == pub.end()){
-        std::vector<PublicationID> empty = {};
-        return empty;
+        chain.push_back(NO_PUBLICATION);
     }
 
     if (pub[id].parent != nullptr){
