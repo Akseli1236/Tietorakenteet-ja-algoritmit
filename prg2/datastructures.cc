@@ -518,10 +518,7 @@ std::vector<Connection> Datastructures::get_all_connections()
             if (conn.find(pair) == conn.end() && connection.aff1 == pair.first){
                 conn[pair] = connection;
             }
-
-
         }
-
     }
 
     for (auto& i : conn){
@@ -531,10 +528,52 @@ std::vector<Connection> Datastructures::get_all_connections()
     return allConnections;
 }
 
-Path Datastructures::get_any_path(AffiliationID /*source*/, AffiliationID /*target*/)
+Path Datastructures::get_any_path(AffiliationID source, AffiliationID target)
 {
-    // Replace the line below with your implementation
-    throw NotImplemented("get_any_path()");
+    std::vector<Connection> path = {};
+    std::vector<AffiliationID> originalVisited = visited;
+    std::vector<PubData*> pubs = aff[source].pub;
+
+
+    for (auto& pub : pubs){
+        //auto it = find(pub->affId.begin(), pub->affId.end(), target);
+        /*
+        if (it != pub->affId.end()){
+            std::cout << "Here" << std::endl;
+            path.push_back(Connection{source, target, 1});
+            visited.clear();
+            return path;
+        }
+        */
+        auto conections = get_connected_affiliations(source);
+        for (auto& aff : conections){
+
+            if (std::find(visited.begin(), visited.end(), aff.aff2) == visited.end() && aff.aff2 != source) {
+
+                visited.push_back(source);
+                path.push_back(aff);
+
+                auto subPath = get_any_path(aff.aff2, target);
+                path.insert(path.end(), subPath.begin(), subPath.end());
+                if (!path.empty() && path.back().aff2 == target) {
+                    // Löydetty koko polku, palataan
+                    visited.clear();
+                    return path;
+                }
+
+                // Jos reitti oli umpikuja, palataan alkuperäiseen visited-tilaan
+                path.pop_back();
+                visited = originalVisited;
+            }
+
+
+
+        }
+    }
+    visited.clear();
+    return {};
+
+
 }
 
 Path Datastructures::get_path_with_least_affiliations(AffiliationID /*source*/, AffiliationID /*target*/)

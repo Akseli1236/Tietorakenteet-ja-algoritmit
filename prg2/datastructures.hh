@@ -315,6 +315,7 @@ private:
     bool sorted_name;
     std::vector<AffiliationID> orderedNames;
     std::vector<AffiliationID> orderedDistance;
+    std::vector<AffiliationID> visited;
 
 };
 

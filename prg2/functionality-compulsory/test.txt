@@ -1,0 +1,4 @@
+read "example-data/example-affiliations.txt" silent
+add_publication 0 "0" 42 LY ISY
+add_publication 1 "1" 42 TUNI ISY
+get_any_path LY TUNI
