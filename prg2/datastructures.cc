@@ -536,7 +536,7 @@ Path Datastructures::get_any_path(AffiliationID source, AffiliationID target)
     auto conections = get_connected_affiliations(source);
     for (auto& aff : conections){
 
-        if (std::find(visited.begin(), visited.end(), aff.aff2) == visited.end() && aff.aff2 != source) {
+        if (std::find(visited.begin(), visited.end(), aff.aff2) == visited.end()) {
 
             visited.push_back(source);
             path.push_back(aff);
@@ -545,7 +545,7 @@ Path Datastructures::get_any_path(AffiliationID source, AffiliationID target)
             path.insert(path.end(), subPath.begin(), subPath.end());
             if (!path.empty() && path.back().aff2 == target) {
                 // Löydetty koko polku, palataan
-                visited.clear();
+                //visited.clear();
                 return path;
             }
 
@@ -557,11 +557,8 @@ Path Datastructures::get_any_path(AffiliationID source, AffiliationID target)
 
 
    }
-
     visited.clear();
-    return {};
-
-
+    return path;
 }
 
 Path Datastructures::get_path_with_least_affiliations(AffiliationID /*source*/, AffiliationID /*target*/)
