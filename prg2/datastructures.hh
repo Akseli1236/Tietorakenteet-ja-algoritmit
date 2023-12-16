@@ -318,6 +318,4 @@ private:
 
 };
 
-};
-
 #endif // DATASTRUCTURES_HH
