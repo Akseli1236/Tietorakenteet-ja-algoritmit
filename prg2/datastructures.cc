@@ -9,6 +9,8 @@
 #include <random>
 
 #include <cmath>
+#include <set>
+#include <iostream>
 
 std::minstd_rand rand_engine; // Reasonably quick pseudo-random generator
 
@@ -462,16 +464,71 @@ bool Datastructures::remove_publication(PublicationID publicationid)
     return true;
 }
 
-std::vector<Connection> Datastructures::get_connected_affiliations(AffiliationID /*id*/)
+std::vector<Connection> Datastructures::get_connected_affiliations(AffiliationID id)
 {
-    // Replace the line below with your implementation
-    throw NotImplemented("get_connected_affiliations()");
+    std::vector<Connection> connections = {};
+    std::unordered_map<AffiliationID, Connection> connected;
+    if (aff.find(id) == aff.end()){
+        return {};
+    }
+
+    for (auto& singlePub : pub){
+        std::vector<AffiliationID> affs = singlePub.second.affId;
+        auto it = find(affs.begin(), affs.end(), id);
+        if (it != affs.end()){
+            for (std::size_t i = 0; i < affs.size(); i++){
+                if (affs.at(i) != id){
+                    if (connected.find(affs.at(i)) == connected.end()){
+                        connected[affs.at(i)] = Connection{id, affs.at(i), 1};
+                    }else{
+                        auto weight = connected[affs.at(i)].weight;
+                        connected[affs.at(i)] = Connection{id, affs.at(i), weight + 1};
+                    }
+                }
+
+            }
+
+        }
+
+    }
+
+    for (auto& connection : connected){
+        connections.push_back(connection.second);
+    }
+
+
+    return connections;
 }
 
 std::vector<Connection> Datastructures::get_all_connections()
 {
-    // Replace the line below with your implementation
-    throw NotImplemented("get_all_connections()");
+    std::vector<Connection> allConnections = {};
+    std::pair<AffiliationID, AffiliationID> pair;
+    std::map<std::pair<AffiliationID, AffiliationID>, Connection> conn;
+    for (auto& singleAff : aff){
+        std::vector<Connection> connections = get_connected_affiliations(singleAff.first);
+        for (auto& connection : connections){
+            if (connection.aff1 < connection.aff2){
+                pair.first = connection.aff1;
+                pair.second = connection.aff2;
+            }else{
+                pair.first = connection.aff2;
+                pair.second = connection.aff1;
+            }
+            if (conn.find(pair) == conn.end() && connection.aff1 == pair.first){
+                conn[pair] = connection;
+            }
+
+
+        }
+
+    }
+
+    for (auto& i : conn){
+        allConnections.push_back(i.second);
+    }
+
+    return allConnections;
 }
 
 Path Datastructures::get_any_path(AffiliationID /*source*/, AffiliationID /*target*/)
