@@ -11,6 +11,7 @@
 #include <cmath>
 #include <set>
 #include <iostream>
+#include <functional>
 
 std::minstd_rand rand_engine; // Reasonably quick pseudo-random generator
 
@@ -24,6 +25,18 @@ Type random_in_range(Type start, Type end)
 
     return static_cast<Type>(start+num);
 }
+
+struct pair_hash {
+    template <class T1, class T2>
+    std::size_t operator () (const std::pair<T1,T2> &p) const {
+        auto h1 = std::hash<T1>{}(p.first);
+        auto h2 = std::hash<T2>{}(p.second);
+
+        // Mainly for demonstration purposes, i.e. works but is overly simple
+        // In the real world, use sth. like boost.hash_combine
+        return h1 ^ h2;
+    }
+};
 
 // Modify the code below to implement the functionality of the class.
 // Also remove comments from the parameter names when you implement
@@ -504,7 +517,7 @@ std::vector<Connection> Datastructures::get_all_connections()
 {
     std::vector<Connection> allConnections = {};
     std::pair<AffiliationID, AffiliationID> pair;
-    std::map<std::pair<AffiliationID, AffiliationID>, Connection> conn;
+    std::unordered_map<std::pair<AffiliationID, AffiliationID>, Connection, pair_hash> conn;
     for (auto& singleAff : aff){
         std::vector<Connection> connections = get_connected_affiliations(singleAff.first);
         for (auto& connection : connections){
