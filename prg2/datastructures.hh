@@ -278,16 +278,18 @@ public:
 
     // PRG 2 functions:
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance:O(n^2)
+    // Short rationale for estimate:Used nested loops
     std::vector<Connection> get_connected_affiliations(AffiliationID id);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance:O(n^3)
+    // Short rationale for estimate:We loop trough n times and call
+    // O(n^2) function n times.
     std::vector<Connection> get_all_connections();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n^2)
+    // Short rationale for estimate: Calling function with
+    // time complexity of O(n^2)
     Path get_any_path(AffiliationID source, AffiliationID target);
 
     // PRG2 optional functions

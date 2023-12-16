@@ -532,44 +532,32 @@ Path Datastructures::get_any_path(AffiliationID source, AffiliationID target)
 {
     std::vector<Connection> path = {};
     std::vector<AffiliationID> originalVisited = visited;
-    std::vector<PubData*> pubs = aff[source].pub;
 
+    auto conections = get_connected_affiliations(source);
+    for (auto& aff : conections){
 
-    for (auto& pub : pubs){
-        //auto it = find(pub->affId.begin(), pub->affId.end(), target);
-        /*
-        if (it != pub->affId.end()){
-            std::cout << "Here" << std::endl;
-            path.push_back(Connection{source, target, 1});
-            visited.clear();
-            return path;
-        }
-        */
-        auto conections = get_connected_affiliations(source);
-        for (auto& aff : conections){
+        if (std::find(visited.begin(), visited.end(), aff.aff2) == visited.end() && aff.aff2 != source) {
 
-            if (std::find(visited.begin(), visited.end(), aff.aff2) == visited.end() && aff.aff2 != source) {
+            visited.push_back(source);
+            path.push_back(aff);
 
-                visited.push_back(source);
-                path.push_back(aff);
-
-                auto subPath = get_any_path(aff.aff2, target);
-                path.insert(path.end(), subPath.begin(), subPath.end());
-                if (!path.empty() && path.back().aff2 == target) {
-                    // Löydetty koko polku, palataan
-                    visited.clear();
-                    return path;
-                }
-
-                // Jos reitti oli umpikuja, palataan alkuperäiseen visited-tilaan
-                path.pop_back();
-                visited = originalVisited;
+            auto subPath = get_any_path(aff.aff2, target);
+            path.insert(path.end(), subPath.begin(), subPath.end());
+            if (!path.empty() && path.back().aff2 == target) {
+                // Löydetty koko polku, palataan
+                visited.clear();
+                return path;
             }
 
-
-
+            // Jos reitti oli umpikuja, palataan alkuperäiseen visited-tilaan
+            path.pop_back();
+            visited = originalVisited;
         }
-    }
+
+
+
+   }
+
     visited.clear();
     return {};
 
