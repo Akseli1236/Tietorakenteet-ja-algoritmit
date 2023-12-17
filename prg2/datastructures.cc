@@ -641,6 +641,13 @@ Path Datastructures::get_path_with_least_affiliations(AffiliationID source, Affi
     return shortestPath;
 }
 
+
+Distance heuristic(const Coord& coordA, const Coord& coordB) {
+    // Yksinkertainen euklidinen etäisyys heuristiikka
+    return sqrt(pow((coordB.x - coordA.x), 2) + pow((coordB.y - coordA.y), 2));
+}
+
+
 Path Datastructures::get_path_of_least_friction(AffiliationID source, AffiliationID target)
 {
 
@@ -648,58 +655,83 @@ Path Datastructures::get_path_of_least_friction(AffiliationID source, Affiliatio
         return leastFric[{source,target}];
     }
 
-    std::vector<std::vector<Connection>> allPaths;
-    std::vector<Connection> shortestPath;
-    std::vector<Connection> currentPath;
-    std::unordered_set<AffiliationID> visitedSet;
+    auto comparePaths = [target](const Path& a, const Path& b) {
+        // Find the maximum weight in each path
+        Weight minWeightA = 0, minWeightB = 0;
 
-    std::function<void(AffiliationID)> dfs = [&](AffiliationID current) {
-        visitedSet.insert(current);
-        auto connections = get_connected_affiliations(current);
-
-        for (auto& aff : connections) {
-            if (visitedSet.find(aff.aff2) == visitedSet.end()) {
-                currentPath.push_back(aff);
-                if (aff.aff2 == target) {
-                    allPaths.push_back(currentPath);
-                } else {
-                    dfs(aff.aff2);
-                }
-
-                currentPath.pop_back();
+        for (const auto& edge : a) {
+            if (minWeightA == 0){
+                minWeightA = edge.weight;
+            }else if (edge.weight < minWeightA){
+                minWeightA = edge.weight;
             }
         }
 
-        visitedSet.erase(current);
+        for (const auto& edge : b) {
+            if (minWeightB == 0){
+                minWeightB = edge.weight;
+            }else if (edge.weight < minWeightB){
+                minWeightB = edge.weight;
+            }
+        }
+
+        // First, prioritize paths with a greater maximum weight
+        if (minWeightB != minWeightA) {
+            return minWeightB > minWeightA;
+        }
+
+        // If the maximum weights are equal, then prioritize the shorter path
+        return a.size() > b.size();
     };
 
-    dfs(source);
-    visitedSet.clear();
-    Weight minw = 0;
-    for (auto& all : allPaths){
-        Weight w = 0;
-        Path tempCon = {};
-        for (auto& all2 : all){
-            if (w == 0 || all2.weight < w){
-                w = all2.weight;
-            }
-            tempCon.push_back(all2);
+    std::priority_queue<Path, std::vector<Path>, decltype(comparePaths)> pq(comparePaths);
+    std::unordered_set<AffiliationID> visitedSet;
+    Path shortestPath2;
 
+    // Alustetaan Dijkstran algoritmin alkutila
+    pq.push({});
+
+    while (!pq.empty()) {
+        // Otetaan keosta solmu, jolla on lyhin etäisyys
+        Path currentPath = pq.top();
+        pq.pop();
+
+        // Jos solmu on jo käsitelty, älä käsittele sitä uudelleen
+        if (!currentPath.empty() && visitedSet.find(currentPath.back().aff2) != visitedSet.end()) {
+            continue;
         }
-        if (shortestPath.empty() || w > minw || (tempCon.size() < shortestPath.size() && w == minw)){
 
-                minw = w;
-                shortestPath = tempCon;
+        // Lisätään solmu käytyjen joukkoon
+        if (!currentPath.empty()) {
+            visitedSet.insert(currentPath.back().aff2);
+        }
+
+        // Jos ollaan saavuttu kohdesolmuun
+        if (!currentPath.empty() && currentPath.back().aff2 == target) {
+            shortestPath2 = currentPath;
+            break;
+        }
+
+        // Käy läpi kaikki solmun naapurit
+        AffiliationID current = (!currentPath.empty()) ? currentPath.back().aff2 : source;
+        auto connections = get_connected_affiliations(current);
+        for (auto& aff : connections) {
+            AffiliationID neighbor = aff.aff2;
+
+            // Jos naapuri ei ole vielä käyty, lisätään se prioriteettijonoon
+            if (visitedSet.find(neighbor) == visitedSet.end()) {
+
+                Path newPath = currentPath;
+                newPath.push_back(aff);
+
+                pq.push(newPath);
+            }
         }
     }
-    leastFric[{source, target}] = shortestPath;
-    return shortestPath;
+
+    return shortestPath2;
 }
 
-Distance heuristic(const Coord& coordA, const Coord& coordB) {
-    // Yksinkertainen euklidinen etäisyys heuristiikka
-    return sqrt(pow((coordB.x - coordA.x), 2) + pow((coordB.y - coordA.y), 2));
-}
 
 PathWithDist Datastructures::get_shortest_path(AffiliationID source, AffiliationID target)
 {
