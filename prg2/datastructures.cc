@@ -624,8 +624,21 @@ PathWithDist Datastructures::get_shortest_path(AffiliationID source, Affiliation
 
     // Alustetaan Dijkstran algoritmiin tarvittavat rakenteet
     auto comparePaths = [this, target](const PathWithDist& a, const PathWithDist& b) {
+        if (a.empty() && b.empty()) {
+            return false; // Jos molemmat polut ovat tyhjiä, ne ovat yhtä pitkiä (tai lyhyitä)
+        }
+
+        if (a.empty()) {
+            return false; // Tyhjä polku on aina "lyhyempi" kuin ei-tyhjä polku
+        }
+
+        if (b.empty()) {
+            return true; // Ei-tyhjä polku on aina "pidempi" kuin tyhjä polku
+        }
+
         auto coordA = get_affiliation_coord(a.back().first.aff2);
         auto coordB = get_affiliation_coord(b.back().first.aff2);
+
         return (a.back().second + heuristic(coordA, get_affiliation_coord(target))) >
                (b.back().second + heuristic(coordB, get_affiliation_coord(target)));
     };
