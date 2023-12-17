@@ -219,6 +219,7 @@ bool Datastructures::add_publication(PublicationID id, const Name &name, Year ye
     allConnections.clear();
     conn.clear();
     shortestPath.clear();
+    leastAffs.clear();
     pub[id] = {affiliations, name, year, id, nullptr};
     for (const auto& affId : affiliations){
         aff[affId].pub.push_back(&pub[id]);
@@ -285,6 +286,7 @@ std::vector<PublicationID> Datastructures::get_direct_references(PublicationID i
 bool Datastructures::add_affiliation_to_publication(AffiliationID affiliationid, PublicationID publicationid)
 {
     shortestPath.clear();
+    leastAffs.clear();
     if (aff.find(affiliationid) != aff.end()){
         pub[publicationid].affId.push_back(affiliationid);
         aff[affiliationid].pubs.push_back(publicationid);
@@ -596,10 +598,45 @@ Path Datastructures::get_any_path(AffiliationID source, AffiliationID target)
 }
 
 
-Path Datastructures::get_path_with_least_affiliations(AffiliationID /*source*/, AffiliationID /*target*/)
+Path Datastructures::get_path_with_least_affiliations(AffiliationID source, AffiliationID target)
 {
-    // Replace the line below with your implementation
-    throw NotImplemented("get_path_with_least_affiliations()");
+    if (leastAffs[{source,target}].size() != 0){
+        return leastAffs[{source,target}];
+    }
+    std::vector<Connection> shortestPath;
+    std::queue<std::vector<Connection>> q;
+    std::unordered_set<AffiliationID> visitedSet;
+
+    q.push({}); // Tyhjä polku aloitussolmuun
+
+    while (!q.empty()) {
+        std::vector<Connection> currentPath = q.front();
+        q.pop();
+
+        AffiliationID current = (!currentPath.empty()) ? currentPath.back().aff2 : source;
+
+        visitedSet.insert(current);
+        auto connections = get_connected_affiliations(current);
+
+        for (auto& aff : connections) {
+            if (visitedSet.find(aff.aff2) == visitedSet.end()) {
+                std::vector<Connection> newPath = currentPath;
+                newPath.push_back(aff);
+
+                if (aff.aff2 == target) {
+                    if (shortestPath.empty() || newPath.size() < shortestPath.size()) {
+                        shortestPath = newPath;
+                    }
+                } else {
+                    q.push(newPath);
+                }
+            }
+        }
+    }
+
+    visitedSet.clear();
+    leastAffs[{source, target}] = shortestPath;
+    return shortestPath;
 }
 
 Path Datastructures::get_path_of_least_friction(AffiliationID /*source*/, AffiliationID /*target*/)
