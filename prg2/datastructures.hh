@@ -347,6 +347,7 @@ private:
     std::unordered_map<std::pair<AffiliationID, AffiliationID>, Path,pair_hash> conn;
     std::unordered_map<std::pair<AffiliationID, AffiliationID>, PathWithDist,pair_hash> shortestPath;
     std::unordered_map<std::pair<AffiliationID, AffiliationID>, Path,pair_hash> leastAffs;
+    std::unordered_map<std::pair<AffiliationID, AffiliationID>, Path,pair_hash> leastFric;
 
 };
 

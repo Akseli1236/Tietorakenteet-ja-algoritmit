@@ -220,6 +220,7 @@ bool Datastructures::add_publication(PublicationID id, const Name &name, Year ye
     conn.clear();
     shortestPath.clear();
     leastAffs.clear();
+    leastFric.clear();
     pub[id] = {affiliations, name, year, id, nullptr};
     for (const auto& affId : affiliations){
         aff[affId].pub.push_back(&pub[id]);
@@ -287,6 +288,7 @@ bool Datastructures::add_affiliation_to_publication(AffiliationID affiliationid,
 {
     shortestPath.clear();
     leastAffs.clear();
+    leastFric.clear();
     if (aff.find(affiliationid) != aff.end()){
         pub[publicationid].affId.push_back(affiliationid);
         aff[affiliationid].pubs.push_back(publicationid);
@@ -639,10 +641,59 @@ Path Datastructures::get_path_with_least_affiliations(AffiliationID source, Affi
     return shortestPath;
 }
 
-Path Datastructures::get_path_of_least_friction(AffiliationID /*source*/, AffiliationID /*target*/)
+Path Datastructures::get_path_of_least_friction(AffiliationID source, AffiliationID target)
 {
-    // Replace the line below with your implementation
-    throw NotImplemented("get_path_of_least_friction()");
+
+    if (leastFric[{source,target}].size() != 0){
+        return leastFric[{source,target}];
+    }
+
+    std::vector<std::vector<Connection>> allPaths;
+    std::vector<Connection> shortestPath;
+    std::vector<Connection> currentPath;
+    std::unordered_set<AffiliationID> visitedSet;
+
+    std::function<void(AffiliationID)> dfs = [&](AffiliationID current) {
+        visitedSet.insert(current);
+        auto connections = get_connected_affiliations(current);
+
+        for (auto& aff : connections) {
+            if (visitedSet.find(aff.aff2) == visitedSet.end()) {
+                currentPath.push_back(aff);
+                if (aff.aff2 == target) {
+                    allPaths.push_back(currentPath);
+                } else {
+                    dfs(aff.aff2);
+                }
+
+                currentPath.pop_back();
+            }
+        }
+
+        visitedSet.erase(current);
+    };
+
+    dfs(source);
+    visitedSet.clear();
+    Weight minw = 0;
+    for (auto& all : allPaths){
+        Weight w = 0;
+        Path tempCon = {};
+        for (auto& all2 : all){
+            if (w == 0 || all2.weight < w){
+                w = all2.weight;
+            }
+            tempCon.push_back(all2);
+
+        }
+        if (shortestPath.empty() || w > minw || (tempCon.size() < shortestPath.size() && w == minw)){
+
+                minw = w;
+                shortestPath = tempCon;
+        }
+    }
+    leastFric[{source, target}] = shortestPath;
+    return shortestPath;
 }
 
 Distance heuristic(const Coord& coordA, const Coord& coordB) {
