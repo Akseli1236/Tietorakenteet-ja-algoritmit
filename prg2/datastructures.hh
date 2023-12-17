@@ -15,6 +15,7 @@
 #include <functional>
 #include <exception>
 #include <map>
+#include <bits/stdc++.h>
 
 // Types for IDs
 using AffiliationID = std::string;
@@ -87,6 +88,17 @@ struct Connection
 };
 const Connection NO_CONNECTION{NO_AFFILIATION,NO_AFFILIATION,NO_WEIGHT};
 
+struct pair_hash {
+    template <class T1, class T2>
+    std::size_t operator () (const std::pair<T1,T2> &p) const {
+        auto h1 = std::hash<T1>{}(p.first);
+        auto h2 = std::hash<T2>{}(p.second);
+
+        // Mainly for demonstration purposes, i.e. works but is overly simple
+        // In the real world, use sth. like boost.hash_combine
+        return h1 ^ h2;
+    }
+};
 
 // Return value for cases where Distance is unknown
 Distance const NO_DISTANCE = NO_VALUE;
@@ -106,7 +118,18 @@ public:
 private:
     std::string msg_;
 };
+class Graph {
+public:
+    std::map<AffiliationID, bool> visitedG;
+    std::map<AffiliationID, std::list<AffiliationID> > adj;
 
+    // Function to add an edge to graph
+    void addEdge(AffiliationID v, AffiliationID w);
+
+    // DFS traversal of the vertices
+    // reachable from v
+    void DFS(AffiliationID v);
+};
 // This is the class you are supposed to implement
 
 class Datastructures
@@ -317,7 +340,16 @@ private:
     bool sorted_name;
     std::vector<AffiliationID> orderedNames;
     std::vector<AffiliationID> orderedDistance;
-    std::vector<AffiliationID> visited;
+
+
+    std::vector<AffiliationID> vis;
+    std::map<AffiliationID, bool> visitedG;
+    std::map<std::pair<AffiliationID, AffiliationID>, std::list<Connection> > adj;
+
+
+    std::unordered_map<AffiliationID, std::vector<Connection>> affConns;
+    std::vector<Connection> allConnections;
+    std::unordered_map<std::pair<AffiliationID, AffiliationID>, Path,pair_hash> conn;
 
 };
 
