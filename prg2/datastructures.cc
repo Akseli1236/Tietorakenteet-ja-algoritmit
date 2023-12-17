@@ -638,7 +638,6 @@ PathWithDist Datastructures::get_shortest_path(AffiliationID source, Affiliation
             temp += sqrt(pow((coord2.x - coord1.x),2)+pow((coord2.y - coord1.y),2));
 
             temp2.push_back({b, sqrt(pow((coord2.x - coord1.x),2)+pow((coord2.y - coord1.y),2))});
-            std::cout << b.aff1 << ":" << b.aff2 << std::endl;
         }
         if (leastDist == 0){
             leastDist = temp;
@@ -647,10 +646,7 @@ PathWithDist Datastructures::get_shortest_path(AffiliationID source, Affiliation
             leastDist = temp;
             path = temp2;
         }
-
-
     }
-    //std::cout << leastDist << ":" << path << std::endl;
     return path;
 }
 
