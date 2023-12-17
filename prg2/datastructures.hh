@@ -120,15 +120,12 @@ private:
 };
 class Graph {
 public:
-    std::map<AffiliationID, bool> visitedG;
-    std::map<AffiliationID, std::list<AffiliationID> > adj;
+    Graph();
+    void addEdge(const std::string& v, const std::string& w);
+    void printGraph();
 
-    // Function to add an edge to graph
-    void addEdge(AffiliationID v, AffiliationID w);
-
-    // DFS traversal of the vertices
-    // reachable from v
-    void DFS(AffiliationID v);
+private:
+    std::unordered_map<std::string, std::vector<std::string>> adjList;
 };
 // This is the class you are supposed to implement
 

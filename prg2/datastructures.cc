@@ -13,6 +13,7 @@
 #include <iostream>
 #include <functional>
 #include <bits/stdc++.h>
+#include <queue>
 
 std::minstd_rand rand_engine; // Reasonably quick pseudo-random generator
 
@@ -27,6 +28,10 @@ Type random_in_range(Type start, Type end)
     return static_cast<Type>(start+num);
 }
 
+void Graph::addEdge(const std::string& v, const std::string& w) {
+    adjList[v].push_back(w);
+    adjList[w].push_back(v);
+}
 
 // Modify the code below to implement the functionality of the class.
 // Also remove comments from the parameter names when you implement
@@ -58,6 +63,7 @@ void Datastructures::clear_all()
     orderedDistance.clear();
     affConns.clear();
     conn.clear();
+    allConnections.clear();
 }
 std::vector<AffiliationID> Datastructures::get_all_affiliations()
 {
@@ -480,10 +486,14 @@ std::vector<Connection> Datastructures::get_connected_affiliations(AffiliationID
     std::vector<Connection> connections = {};
     std::unordered_map<AffiliationID, Connection> connected;
 
+    if (aff.empty()){
+        return {};
+    }
     auto it = aff.find(id);
     if (it == aff.end()) {
         return {};
     }
+
     auto it2 = affConns.find(id);
     if (it2 == affConns.end()){
         for (const auto& singlePub : pub) {
@@ -598,78 +608,81 @@ Path Datastructures::get_path_of_least_friction(AffiliationID /*source*/, Affili
     throw NotImplemented("get_path_of_least_friction()");
 }
 
+Distance heuristic(const Coord& coordA, const Coord& coordB) {
+    // Yksinkertainen euklidinen etäisyys heuristiikka
+    return sqrt(pow((coordB.x - coordA.x), 2) + pow((coordB.y - coordA.y), 2));
+}
+
 PathWithDist Datastructures::get_shortest_path(AffiliationID source, AffiliationID target)
 {
 
-    /*
+
     if (shortestPath[{source, target}].size() != 0){
         return shortestPath[{source, target}];
     }
-*/
-    //std::vector<Connection> shortestPath;
-    std::vector<std::pair<Connection, Distance>> shortestPath;
-    std::vector<std::pair<Connection, Distance>> currentPath;
-    std::unordered_set<AffiliationID> visitedSet;
-    Distance leastDist = 0;
 
-    std::function<void(AffiliationID, Distance)> dfs = [&](AffiliationID current, Distance currentDist) {
-        visitedSet.insert(current);
-        auto connections = get_connected_affiliations(current);
 
-        for (auto& aff : connections) {
-            if (visitedSet.find(aff.aff2) == visitedSet.end()) {
-                auto coord1 = get_affiliation_coord(aff.aff1);
-                auto coord2 = get_affiliation_coord(aff.aff2);
-
-                Distance edgeDist = sqrt(pow((coord2.x - coord1.x),2)+pow((coord2.y - coord1.y),2));
-                currentPath.push_back({aff, edgeDist});
-
-                if (aff.aff2 == target) {
-                    if (leastDist == 0 || currentDist + edgeDist < leastDist) {
-                        leastDist = currentDist + edgeDist;
-                        shortestPath = currentPath;
-                    }
-                } else {
-                    dfs(aff.aff2, currentDist + edgeDist);
-                }
-
-                currentPath.pop_back();
-            }
-        }
-
-        visitedSet.erase(current);
+    // Alustetaan Dijkstran algoritmiin tarvittavat rakenteet
+    auto comparePaths = [this, target](const PathWithDist& a, const PathWithDist& b) {
+        auto coordA = get_affiliation_coord(a.back().first.aff2);
+        auto coordB = get_affiliation_coord(b.back().first.aff2);
+        return (a.back().second + heuristic(coordA, get_affiliation_coord(target))) >
+               (b.back().second + heuristic(coordB, get_affiliation_coord(target)));
     };
 
-    dfs(source, 0);
-    visitedSet.clear();
+    std::priority_queue<PathWithDist, std::vector<PathWithDist>, decltype(comparePaths)> pq(comparePaths);
+    std::unordered_set<AffiliationID> visitedSet;
+    PathWithDist shortestPath2;
 
-    return shortestPath;
-    /*
-    for (auto& a : allPaths){
-        int temp = 0;
-        std::vector<std::pair<Connection, Distance>> temp2;
-        for (auto& b : a){
-            auto coord1 = get_affiliation_coord(b.aff1);
-            auto coord2 = get_affiliation_coord(b.aff2);
+    // Alustetaan Dijkstran algoritmin alkutila
+    pq.push({});
 
-            temp += sqrt(pow((coord2.x - coord1.x),2)+pow((coord2.y - coord1.y),2));
+    while (!pq.empty()) {
+        // Otetaan keosta solmu, jolla on lyhin etäisyys
+        PathWithDist currentPath = pq.top();
+        pq.pop();
 
-            temp2.push_back({b, sqrt(pow((coord2.x - coord1.x),2)+pow((coord2.y - coord1.y),2))});
+        // Jos solmu on jo käsitelty, älä käsittele sitä uudelleen
+        if (!currentPath.empty() && visitedSet.find(currentPath.back().first.aff2) != visitedSet.end()) {
+            continue;
         }
-        if (leastDist == 0){
-            leastDist = temp;
-            path = temp2;
 
-        }else if (temp < leastDist){
-            leastDist = temp;
-            path = temp2;
+        // Lisätään solmu käytyjen joukkoon
+        if (!currentPath.empty()) {
+            visitedSet.insert(currentPath.back().first.aff2);
         }
-        shortestPath[{source, target}] = path;
+
+        // Jos ollaan saavuttu kohdesolmuun
+        if (!currentPath.empty() && currentPath.back().first.aff2 == target) {
+            shortestPath2 = currentPath;
+            break;
+        }
+
+        // Käy läpi kaikki solmun naapurit
+        AffiliationID current = (!currentPath.empty()) ? currentPath.back().first.aff2 : source;
+        auto connections = get_connected_affiliations(current);
+        for (auto& aff : connections) {
+            AffiliationID neighbor = aff.aff2;
+
+            // Jos naapuri ei ole vielä käyty, lisätään se prioriteettijonoon
+            if (visitedSet.find(neighbor) == visitedSet.end()) {
+                auto coord1 = get_affiliation_coord(aff.aff1);
+                auto coord2 = get_affiliation_coord(aff.aff2);
+                Distance edgeDist = sqrt(pow((coord2.x - coord1.x), 2) + pow((coord2.y - coord1.y), 2));
+
+                PathWithDist newPath = currentPath;
+                newPath.push_back({aff, edgeDist});
+
+                pq.push(newPath);
+            }
+        }
     }
 
+    // Tallenna laskettu lyhin polku
+    shortestPath[{source, target}] = shortestPath2;
 
-    return path;
-*/
+    return shortestPath2;
+
 }
 
 
