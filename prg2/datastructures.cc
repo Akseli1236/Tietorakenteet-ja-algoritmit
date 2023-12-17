@@ -66,6 +66,7 @@ void Datastructures::clear_all()
     affDist.clear();
     orderedNames.clear();
     orderedDistance.clear();
+    visited.clear();
 }
 std::vector<AffiliationID> Datastructures::get_all_affiliations()
 {
@@ -481,34 +482,35 @@ std::vector<Connection> Datastructures::get_connected_affiliations(AffiliationID
 {
     std::vector<Connection> connections = {};
     std::unordered_map<AffiliationID, Connection> connected;
-    if (aff.find(id) == aff.end()){
+
+    auto it = aff.find(id);
+    if (it == aff.end()) {
         return {};
     }
 
-    for (auto& singlePub : pub){
-        std::vector<AffiliationID> affs = singlePub.second.affId;
-        auto it = find(affs.begin(), affs.end(), id);
-        if (it != affs.end()){
-            for (std::size_t i = 0; i < affs.size(); i++){
-                if (affs.at(i) != id){
-                    if (connected.find(affs.at(i)) == connected.end()){
-                        connected[affs.at(i)] = Connection{id, affs.at(i), 1};
+    for (const auto& singlePub : pub) {
+        const std::vector<AffiliationID>& affs = singlePub.second.affId;
+        auto it = std::find(affs.begin(), affs.end(), id);
+
+        if (it != affs.end()) {
+            for (const auto& otherAff : affs) {
+                if (otherAff != id) {
+                    auto& connection = connected[otherAff];
+                    if (connection.weight == -1){
+                        connection = {id, otherAff, connection.weight + 2};
                     }else{
-                        auto weight = connected[affs.at(i)].weight;
-                        connected[affs.at(i)] = Connection{id, affs.at(i), weight + 1};
+                        connection = {id, otherAff, connection.weight + 1};
                     }
+
                 }
-
             }
-
         }
-
     }
 
-    for (auto& connection : connected){
+    connections.reserve(connected.size());
+    for (const auto& connection : connected) {
         connections.push_back(connection.second);
     }
-
 
     return connections;
 }
@@ -530,13 +532,11 @@ std::vector<Connection> Datastructures::get_all_connections()
             }
             if (conn.find(pair) == conn.end() && connection.aff1 == pair.first){
                 conn[pair] = connection;
+                allConnections.push_back(connection);
             }
         }
     }
 
-    for (auto& i : conn){
-        allConnections.push_back(i.second);
-    }
 
     return allConnections;
 }
@@ -546,7 +546,7 @@ Path Datastructures::get_any_path(AffiliationID source, AffiliationID target)
     std::vector<Connection> path = {};
     std::vector<AffiliationID> originalVisited = visited;
 
-    auto conections = get_connected_affiliations(source);
+    const auto& conections = get_connected_affiliations(source);
     for (auto& aff : conections){
 
         if (std::find(visited.begin(), visited.end(), aff.aff2) == visited.end()) {
