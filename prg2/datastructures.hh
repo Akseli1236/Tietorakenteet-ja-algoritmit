@@ -343,8 +343,6 @@ private:
 
 
     std::vector<AffiliationID> vis;
-    std::map<AffiliationID, bool> visitedG;
-    std::map<std::pair<AffiliationID, AffiliationID>, std::list<Connection> > adj;
 
 
     std::unordered_map<AffiliationID, std::vector<Connection>> affConns;

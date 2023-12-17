@@ -27,28 +27,6 @@ Type random_in_range(Type start, Type end)
     return static_cast<Type>(start+num);
 }
 
-void Graph::addEdge(AffiliationID v, AffiliationID w)
-{
-    // Add w to v’s list.
-    //std::cout << "S" << std::endl;
-    adj[v].push_back(w);
-}
-
-void Graph::DFS(AffiliationID v)
-{
-    // Mark the current node as visited and
-    // print it
-    visitedG[v] = true;
-    std::cout << v << " ";
-
-    // Recur for all the vertices adjacent
-    // to this vertex
-    std::list<AffiliationID>::iterator i;
-    for (i = adj[v].begin(); i != adj[v].end(); ++i)
-        if (!visitedG[*i])
-            DFS(*i);
-}
-
 
 // Modify the code below to implement the functionality of the class.
 // Also remove comments from the parameter names when you implement
@@ -78,8 +56,8 @@ void Datastructures::clear_all()
     affDist.clear();
     orderedNames.clear();
     orderedDistance.clear();
-    visitedG.clear();
     affConns.clear();
+    conn.clear();
 }
 std::vector<AffiliationID> Datastructures::get_all_affiliations()
 {
@@ -234,7 +212,6 @@ bool Datastructures::add_publication(PublicationID id, const Name &name, Year ye
     affConns.clear();
     allConnections.clear();
     conn.clear();
-    adj.clear();
     pub[id] = {affiliations, name, year, id, nullptr};
     for (const auto& affId : affiliations){
         aff[affId].pub.push_back(&pub[id]);
@@ -519,10 +496,7 @@ std::vector<Connection> Datastructures::get_connected_affiliations(AffiliationID
                             connection = {id, otherAff, connection.weight + 2};
                         }else{
                             connection = {id, otherAff, connection.weight + 1};
-
                         }
-
-
                     }
                 }
             }
@@ -556,7 +530,6 @@ std::vector<Connection> Datastructures::get_all_connections()
                     pair.second = connection.aff1;
                 }
                 if (conn.find(pair) == conn.end() && connection.aff1 == pair.first){
-                    adj[pair].push_back(connection);
                     conn[pair] = connection;
                     allConnections.push_back(connection);
                 }
@@ -623,10 +596,62 @@ Path Datastructures::get_path_of_least_friction(AffiliationID /*source*/, Affili
     throw NotImplemented("get_path_of_least_friction()");
 }
 
-PathWithDist Datastructures::get_shortest_path(AffiliationID /*source*/, AffiliationID /*target*/)
+PathWithDist Datastructures::get_shortest_path(AffiliationID source, AffiliationID target)
 {
-    // Replace the line below with your implementation
-    throw NotImplemented("get_shortest_path()");
+    std::vector<std::vector<Connection>> allPaths;
+    std::vector<std::pair<Connection,Distance>> path;
+    std::vector<Connection> currentPath;
+    std::unordered_set<AffiliationID> visitedSet;
+    Distance leastDist = 0;
+
+    std::function<void(AffiliationID)> dfs = [&](AffiliationID current) {
+        visitedSet.insert(current);
+        auto connections = get_connected_affiliations(current);
+
+        for (auto& aff : connections) {
+            if (visitedSet.find(aff.aff2) == visitedSet.end()) {
+                currentPath.push_back(aff);
+
+                if (aff.aff2 == target) {
+                    allPaths.push_back(currentPath);
+                } else {
+                    dfs(aff.aff2);
+                }
+
+                currentPath.pop_back();
+            }
+        }
+
+        visitedSet.erase(current);
+    };
+
+    dfs(source);
+    visitedSet.clear();
+
+    for (auto& a : allPaths){
+        int temp = 0;
+        std::vector<std::pair<Connection, Distance>> temp2;
+        for (auto& b : a){
+            auto coord1 = get_affiliation_coord(b.aff1);
+            auto coord2 = get_affiliation_coord(b.aff2);
+
+            temp += sqrt(pow((coord2.x - coord1.x),2)+pow((coord2.y - coord1.y),2));
+
+            temp2.push_back({b, sqrt(pow((coord2.x - coord1.x),2)+pow((coord2.y - coord1.y),2))});
+            std::cout << b.aff1 << ":" << b.aff2 << std::endl;
+        }
+        if (leastDist == 0){
+            leastDist = temp;
+            path = temp2;
+        }else if (temp < leastDist){
+            leastDist = temp;
+            path = temp2;
+        }
+
+
+    }
+    //std::cout << leastDist << ":" << path << std::endl;
+    return path;
 }
 
 
