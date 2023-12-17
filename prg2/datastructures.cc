@@ -212,6 +212,7 @@ bool Datastructures::add_publication(PublicationID id, const Name &name, Year ye
     affConns.clear();
     allConnections.clear();
     conn.clear();
+    shortestPath.clear();
     pub[id] = {affiliations, name, year, id, nullptr};
     for (const auto& affId : affiliations){
         aff[affId].pub.push_back(&pub[id]);
@@ -277,6 +278,7 @@ std::vector<PublicationID> Datastructures::get_direct_references(PublicationID i
 
 bool Datastructures::add_affiliation_to_publication(AffiliationID affiliationid, PublicationID publicationid)
 {
+    shortestPath.clear();
     if (aff.find(affiliationid) != aff.end()){
         pub[publicationid].affId.push_back(affiliationid);
         aff[affiliationid].pubs.push_back(publicationid);
@@ -598,24 +600,37 @@ Path Datastructures::get_path_of_least_friction(AffiliationID /*source*/, Affili
 
 PathWithDist Datastructures::get_shortest_path(AffiliationID source, AffiliationID target)
 {
-    std::vector<std::vector<Connection>> allPaths;
-    std::vector<std::pair<Connection,Distance>> path;
-    std::vector<Connection> currentPath;
+
+    /*
+    if (shortestPath[{source, target}].size() != 0){
+        return shortestPath[{source, target}];
+    }
+*/
+    //std::vector<Connection> shortestPath;
+    std::vector<std::pair<Connection, Distance>> shortestPath;
+    std::vector<std::pair<Connection, Distance>> currentPath;
     std::unordered_set<AffiliationID> visitedSet;
     Distance leastDist = 0;
 
-    std::function<void(AffiliationID)> dfs = [&](AffiliationID current) {
+    std::function<void(AffiliationID, Distance)> dfs = [&](AffiliationID current, Distance currentDist) {
         visitedSet.insert(current);
         auto connections = get_connected_affiliations(current);
 
         for (auto& aff : connections) {
             if (visitedSet.find(aff.aff2) == visitedSet.end()) {
-                currentPath.push_back(aff);
+                auto coord1 = get_affiliation_coord(aff.aff1);
+                auto coord2 = get_affiliation_coord(aff.aff2);
+
+                Distance edgeDist = sqrt(pow((coord2.x - coord1.x),2)+pow((coord2.y - coord1.y),2));
+                currentPath.push_back({aff, edgeDist});
 
                 if (aff.aff2 == target) {
-                    allPaths.push_back(currentPath);
+                    if (leastDist == 0 || currentDist + edgeDist < leastDist) {
+                        leastDist = currentDist + edgeDist;
+                        shortestPath = currentPath;
+                    }
                 } else {
-                    dfs(aff.aff2);
+                    dfs(aff.aff2, currentDist + edgeDist);
                 }
 
                 currentPath.pop_back();
@@ -625,9 +640,11 @@ PathWithDist Datastructures::get_shortest_path(AffiliationID source, Affiliation
         visitedSet.erase(current);
     };
 
-    dfs(source);
+    dfs(source, 0);
     visitedSet.clear();
 
+    return shortestPath;
+    /*
     for (auto& a : allPaths){
         int temp = 0;
         std::vector<std::pair<Connection, Distance>> temp2;
@@ -642,12 +659,17 @@ PathWithDist Datastructures::get_shortest_path(AffiliationID source, Affiliation
         if (leastDist == 0){
             leastDist = temp;
             path = temp2;
+
         }else if (temp < leastDist){
             leastDist = temp;
             path = temp2;
         }
+        shortestPath[{source, target}] = path;
     }
+
+
     return path;
+*/
 }
 
 

@@ -348,6 +348,7 @@ private:
     std::unordered_map<AffiliationID, std::vector<Connection>> affConns;
     std::vector<Connection> allConnections;
     std::unordered_map<std::pair<AffiliationID, AffiliationID>, Path,pair_hash> conn;
+    std::unordered_map<std::pair<AffiliationID, AffiliationID>, PathWithDist,pair_hash> shortestPath;
 
 };
 
