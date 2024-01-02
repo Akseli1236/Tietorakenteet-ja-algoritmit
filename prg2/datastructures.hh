@@ -118,15 +118,7 @@ public:
 private:
     std::string msg_;
 };
-class Graph {
-public:
-    Graph();
-    void addEdge(const std::string& v, const std::string& w);
-    void printGraph();
 
-private:
-    std::unordered_map<std::string, std::vector<std::string>> adjList;
-};
 // This is the class you are supposed to implement
 
 class Datastructures

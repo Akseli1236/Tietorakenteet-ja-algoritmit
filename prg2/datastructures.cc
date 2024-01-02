@@ -28,10 +28,6 @@ Type random_in_range(Type start, Type end)
     return static_cast<Type>(start+num);
 }
 
-void Graph::addEdge(const std::string& v, const std::string& w) {
-    adjList[v].push_back(w);
-    adjList[w].push_back(v);
-}
 
 // Modify the code below to implement the functionality of the class.
 // Also remove comments from the parameter names when you implement
