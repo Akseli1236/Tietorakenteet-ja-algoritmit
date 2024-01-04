@@ -1,8 +1,5 @@
 // Datastructures.hh
-//
-// Student name:
-// Student email:
-// Student number:
+
 
 #ifndef DATASTRUCTURES_HH
 #define DATASTRUCTURES_HH

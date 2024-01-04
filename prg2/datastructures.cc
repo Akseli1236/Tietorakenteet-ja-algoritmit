@@ -1,8 +1,5 @@
 // Datastructures.cc
-//
-// Student name:
-// Student email:
-// Student number:
+
 
 #include "datastructures.hh"
 

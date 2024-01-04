@@ -1,8 +1,4 @@
 // Datastructures.hh
-//
-// Student name: Akseli Ahonen
-// Student email: akseli.ahonen@tuni.fi
-// Student number: 150313812
 
 #ifndef DATASTRUCTURES_HH
 #define DATASTRUCTURES_HH
